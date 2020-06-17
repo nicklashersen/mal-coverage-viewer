@@ -3,7 +3,12 @@
  */
 package mal.coverage.viewer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -20,63 +25,71 @@ import javafx.stage.FileChooser.ExtensionFilter;
 // import javafx.scene.shape.Rectangle;
 // import javafx.scene.paint.Color;
 
-
 public class Main extends Application {
-    private Stage stage;
+	private Stage stage;
+	private Graph graph;
 
-    @Override
-    public void start(Stage primaryStage) {
-	BorderPane root = new BorderPane();
-	MenuBar menuBar = createMenu();
+	@Override
+	public void start(Stage primaryStage) {
+		BorderPane root = new BorderPane();
+		MenuBar menuBar = createMenu();
+		graph = new Graph();
 
-	Graph graph = new Graph();
+		root.setCenter(graph.getScrollPane());
+		root.setTop(menuBar);
 
-	root.setCenter(graph.getScrollPane());
-	root.setTop(menuBar);
+		Scene scene = new Scene(root, 1024, 769);
+		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
-	Scene scene = new Scene(root, 1024, 769);
-	scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+		primaryStage.setScene(scene);
+		primaryStage.show();
 
-	primaryStage.setScene(scene);
-	primaryStage.show();
+		stage = primaryStage;
 
-	stage = primaryStage;
+		// Rectangle rect = new Rectangle(80, 30);
 
-	// Rectangle rect = new Rectangle(80, 30);
+		// graph.cellLayer.getChildren().add(rect);
 
-	// graph.cellLayer.getChildren().add(rect);
+	}
 
-    }
+	private MenuBar createMenu() {
+		MenuBar menuBar = new MenuBar();
 
-    private MenuBar createMenu() {
-	MenuBar menuBar = new MenuBar();
+		Menu fileMenu = new Menu("File");
+		MenuItem fitem1 = new MenuItem("Open");
 
-	Menu fileMenu = new Menu("File");
-	MenuItem fitem1 = new MenuItem("Open");
+		fitem1.setOnAction(e -> {
+			FileChooser fChooser = new FileChooser();
+			fChooser.setTitle("Open graph file");
+			fChooser.getExtensionFilters().addAll(new ExtensionFilter("JSON Files", "*.json"),
+					new ExtensionFilter("All Files", "*.*"));
 
-	fitem1.setOnAction(e -> {
-		FileChooser fChooser = new FileChooser();
-		fChooser.setTitle("Open graph file");
-		fChooser.getExtensionFilters().addAll(
-		    new ExtensionFilter("JSON Files", "*.json"),
-		    new ExtensionFilter("All Files", "*.*")
-		);
+			File selectedFile = fChooser.showOpenDialog(stage);
 
-		File selectedFile = fChooser.showOpenDialog(stage);
+			if (selectedFile != null)
+				loadFile(selectedFile);
+		});
 
-		if (selectedFile != null) loadFile(selectedFile);
-	});
+		fileMenu.getItems().add(fitem1);
+		menuBar.getMenus().add(fileMenu);
 
-	fileMenu.getItems().add(fitem1);
-	menuBar.getMenus().add(fileMenu);
+		return menuBar;
+	}
 
-	return menuBar;
-    }
+	private void loadFile(File file) {
+		JSONObject root = null;
+		try {
+			root = new JSONObject(new JSONTokener(new BufferedReader(new FileReader(file))));
+		} catch (Exception e) {
+		}
 
-    private void loadFile(File file) {
-    }
+		if (root != null) {
+			graph.clear();
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+		}
+	}
+
+	public static void main(String[] args) {
+		launch(args);
+	}
 }
