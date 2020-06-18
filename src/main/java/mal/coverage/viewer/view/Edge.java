@@ -7,7 +7,7 @@ public class Edge extends Line {
     public final Cell end;
 
     public Edge(Cell src, Cell end) {
-        super(src.getLayoutX(), src.getLayoutY(), end.getLayoutX(), end.getLayoutY());
+        super();
 
         getStyleClass().add("edge-unvisited");
         getStyleClass().add("edge");
@@ -15,5 +15,14 @@ public class Edge extends Line {
         this.src = src;
         this.end = end;
 
+        update();
+    }
+
+    public void update() {
+        setStartX(src.getLayoutX() + src.getWidth());
+        setStartY(src.getLayoutY() + src.getHeight());
+
+        setEndX(end.getLayoutX() + end.getWidth() / 2);
+        setEndY(end.getLayoutY() + end.getHeight() / 2);
     }
 }

@@ -1,13 +1,10 @@
 package mal.coverage.viewer.view;
 
-import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.Node;
 import javafx.scene.Group;
-
-import javafx.scene.transform.Scale;
-
-import javafx.scene.input.ScrollEvent;
 
 /**
  * Every element added to the zoom group will be scaled during scroll events. If
@@ -16,29 +13,34 @@ import javafx.scene.input.ScrollEvent;
 
 public class ZoomableScrollPane extends ScrollPane {
 	private Node content;
+	private Group contentGroup;
 	private Group zoomGroup;
-	private Scale scaleTransform;
 
 	private double scaleValue = 1.0;
-	private double scaleDelta = 0.1;
+	private double zoomIntensity = 0.002;
 
-	public static final double MAX_ZOOM_IN = 10.0;
-	public static final double MAX_ZOOM_OUT = 0.1;
+	public final double MIN_ZOOM_VALUE = 0.1;
+	public final double MAX_ZOOM_VALUE = 10;
 
 	public ZoomableScrollPane(Node content) {
-		this.content = content;
-		Group contentGroup = new Group();
+		super();
 
-		zoomGroup = new Group();
-		contentGroup.getChildren().add(zoomGroup);
-		zoomGroup.getChildren().add(this.content);
+		this.content = content;
+		zoomGroup = new Group(this.content);
+		contentGroup = new Group(zoomGroup);
+
+		contentGroup.setOnScroll(e -> {
+			e.consume();
+			scroll(e.getDeltaY(), new Point2D(e.getX(), e.getY()));
+		});
 
 		setContent(contentGroup);
 
-		scaleTransform = new Scale(scaleValue, scaleValue, 0, 0);
-		zoomGroup.getTransforms().add(scaleTransform);
-
-		setOnScroll(new ZoomHandler());
+		setPannable(true);
+		setHbarPolicy(ScrollBarPolicy.NEVER);
+		setVbarPolicy(ScrollBarPolicy.NEVER);
+		setFitToHeight(true);
+		setFitToWidth(true);
 	}
 
 	public double getScaleValue() {
@@ -50,30 +52,13 @@ public class ZoomableScrollPane extends ScrollPane {
 	}
 
 	public void zoomTo(double scaleValue) {
+		scaleValue = scaleValue <= MIN_ZOOM_VALUE ? MIN_ZOOM_VALUE : scaleValue;
+		scaleValue = scaleValue >= MAX_ZOOM_VALUE ? MAX_ZOOM_VALUE : scaleValue;
+
 		this.scaleValue = scaleValue;
 
-		scaleTransform.setX(scaleValue);
-		scaleTransform.setY(scaleValue);
-	}
-
-	public void zoomOut() {
-		scaleValue -= scaleDelta;
-
-		if (Double.compare(scaleValue, MAX_ZOOM_OUT) < 0) {
-			scaleValue = MAX_ZOOM_OUT;
-		}
-
-		zoomTo(scaleValue);
-	}
-
-	public void zoomIn() {
-		scaleValue += scaleDelta;
-
-		if (Double.compare(scaleValue, MAX_ZOOM_IN) > 0) {
-			scaleValue = MAX_ZOOM_IN;
-		}
-
-		zoomTo(scaleValue);
+		content.setScaleX(scaleValue);
+		content.setScaleY(scaleValue);
 	}
 
 	public void zoomToFit() {
@@ -81,27 +66,25 @@ public class ZoomableScrollPane extends ScrollPane {
 		zoomToActual();
 	}
 
-	/**
-	 * Scroll event zoom handler.
-	 */
-	private class ZoomHandler implements EventHandler<ScrollEvent> {
+	public void scroll(double amount, Point2D mousePos) {
+			double zoomFactor = Math.exp(amount * zoomIntensity);
 
-		@Override
-		public void handle(ScrollEvent event) {
-			double deltaY = event.getDeltaY();
+			Bounds innerBounds = zoomGroup.getLayoutBounds();
+			Bounds viewportBounds = getViewportBounds();
 
-			if (deltaY != 0) {
-				System.out.println(event.getDeltaY());
-				if (event.getDeltaY() < 0.0) {
-					zoomIn();
-				} else {
-					zoomOut();
-				}
+			double valX = getHvalue() * (innerBounds.getWidth() - viewportBounds.getWidth());
+			double valY = getVvalue() * (innerBounds.getHeight() - viewportBounds.getHeight());
 
-				zoomTo(scaleValue);
-			}
+			scaleValue = scaleValue * zoomFactor;
+			zoomTo(scaleValue);
+			layout();
 
-			event.consume();
-		}
+			Point2D posInZoomTarget = content.parentToLocal(zoomGroup.parentToLocal(mousePos));
+
+			Point2D adjustment = content.getLocalToParentTransform().deltaTransform(posInZoomTarget.multiply(zoomFactor - 1));
+
+			Bounds updatedInnerBounds = zoomGroup.getBoundsInLocal();
+			setHvalue((valX + adjustment.getX()) / (updatedInnerBounds.getWidth() - viewportBounds.getWidth()));
+			setHvalue((valY + adjustment.getY()) / (updatedInnerBounds.getHeight() - viewportBounds.getHeight()));
 	}
 }

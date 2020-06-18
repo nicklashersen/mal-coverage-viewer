@@ -5,9 +5,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -36,7 +33,6 @@ public class DataCell extends Cell {
         className.setTextFill(Color.WHITE);
         name.setFont(new Font(FONT_NAME_SIZE));
         name.setTextFill(Color.WHITE);
-
 
         getChildren().add(vertLayout);
     }
