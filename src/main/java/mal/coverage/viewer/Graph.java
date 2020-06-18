@@ -15,10 +15,19 @@ public class Graph {
     public Pane cellLayer;
     protected Layout cellLayout;
 
+    /**
+     * Create a new graph with the default (random) layout
+     * stratgey.
+     */
     public Graph() {
         this(new RandomLayout());
     }
 
+    /**
+     * Create a new graph with a specfic layout.
+     * 
+     * @param l layout strategy
+     */
     public Graph(Layout l) {
         canvas = new Group();
         cellLayer = new Pane();
@@ -32,20 +41,37 @@ public class Graph {
         scrollPane.setFitToHeight(true);
     }
 
+    /**
+     * Remove all cells displayed in the graph.
+     */
     public void clear() {
         cellLayer.getChildren().clear();
     }
 
+    /**
+     * Add a cell to the graph view.
+     * @param cell
+     */
     public void addCell(Cell cell) {
         cellLayer.getChildren().add(cell);
 
         cellLayout.execute(cell);
     }
 
+    /**
+     * Get the underlying scroll pane.
+     * 
+     * @return scroll pane
+     */
     public ScrollPane getScrollPane() {
         return scrollPane;
     }
 
+    /**
+     * Get the curren scale (zoom)
+     * 
+     * @return zoom
+     */
     public double getScale() {
         return scrollPane.getScaleValue();
     }
