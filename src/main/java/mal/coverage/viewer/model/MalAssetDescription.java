@@ -27,7 +27,7 @@ public class MalAssetDescription {
         }
 
 
-        JSONArray defenseJSON = obj.getJSONArray("defnese");
+        JSONArray defenseJSON = obj.getJSONArray("defense");
         String[] defense = new String[defenseJSON.length()];
         for (int i = 0; i < defenseJSON.length(); i++) {
             defense[i] = defenseJSON.getString(i);

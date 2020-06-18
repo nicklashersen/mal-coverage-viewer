@@ -21,6 +21,7 @@ import javafx.scene.control.MenuItem;
 
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import mal.coverage.viewer.model.MalModel;
 
 // import javafx.scene.shape.Rectangle;
 // import javafx.scene.paint.Color;
@@ -81,8 +82,14 @@ public class Main extends Application {
 		return menuBar;
 	}
 
+	/**
+	 * Construct MalModels from a JSON file containing MAl simulations.
+	 * 
+	 * @param file JSON file
+	 */
 	private void loadFile(File file) {
 		JSONObject root = null;
+
 		try {
 			root = new JSONObject(new JSONTokener(new BufferedReader(new FileReader(file))));
 		} catch (Exception e) {
@@ -90,7 +97,7 @@ public class Main extends Application {
 
 		if (root != null) {
 			graph.clear();
-
+			MalModel model = MalModel.fromJSON(root);
 		}
 	}
 
