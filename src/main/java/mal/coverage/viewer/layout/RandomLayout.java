@@ -8,8 +8,8 @@ public class RandomLayout extends Layout {
     public double limitX;
     public double limitY;
 
-    public static final double DEFAULT_LIMIT_X = 200;
-    public static final double DEFAULT_LIMIT_Y = 200;
+    public static final double DEFAULT_LIMIT_X = 1000;
+    public static final double DEFAULT_LIMIT_Y = 800;
 
 
     public RandomLayout() {

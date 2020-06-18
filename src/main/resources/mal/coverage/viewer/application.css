@@ -1,3 +1,15 @@
 .scroll-pane > .viewport {
-    -fx-background-color: gray;
+    -fx-background-color: #262626;
+}
+
+.edge {
+    -fx-stroke-width: 2px;
+}
+
+.edge-unvisited {
+    -fx-stroke: red;
+}
+
+.edge-visited {
+    -fx-stroke: green;
 }
