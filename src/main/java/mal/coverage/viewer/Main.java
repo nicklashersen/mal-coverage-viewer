@@ -52,6 +52,11 @@ public class Main extends Application {
 
 	}
 
+	/**
+	 * Create the window menu bar
+	 * 
+	 * @return a javafx window menu object
+	 */
 	private MenuBar createMenu() {
 		MenuBar menuBar = new MenuBar();
 
