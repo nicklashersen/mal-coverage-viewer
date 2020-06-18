@@ -1,4 +1,4 @@
-package mal.coverage.viewer;
+package mal.coverage.viewer.view;
 
 public class Edge {
     public final Cell src;

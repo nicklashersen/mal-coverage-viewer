@@ -1,4 +1,4 @@
-package mal.coverage.viewer;
+package mal.coverage.viewer.view;
 
 import java.util.Set;
 import java.util.HashSet;

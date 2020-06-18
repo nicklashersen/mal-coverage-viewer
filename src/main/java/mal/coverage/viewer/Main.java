@@ -21,7 +21,9 @@ import javafx.scene.control.MenuItem;
 
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+
 import mal.coverage.viewer.model.MalModel;
+import mal.coverage.viewer.view.Graph;
 
 // import javafx.scene.shape.Rectangle;
 // import javafx.scene.paint.Color;

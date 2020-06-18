@@ -1,4 +1,4 @@
-package mal.coverage.viewer;
+package mal.coverage.viewer.view;
 
 import javafx.event.EventHandler;
 import javafx.scene.control.ScrollPane;
