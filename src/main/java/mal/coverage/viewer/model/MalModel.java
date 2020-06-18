@@ -17,6 +17,12 @@ public class MalModel {
         this.assets = assets;
     }
 
+    /**
+     * Constructs a model from a MAL threat model JSON instance.
+     * 
+     * @param obj root json object node
+     * @return A MalModel 
+     */
     public static MalModel fromJSON(JSONObject obj) {
         // Mal class descriptions
         JSONArray jsonAssetClasses = obj.getJSONArray("assets");
