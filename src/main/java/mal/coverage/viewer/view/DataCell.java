@@ -1,5 +1,11 @@
 package mal.coverage.viewer.view;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -15,29 +21,47 @@ public class DataCell extends Cell {
 
     public static final double FONT_NAME_SIZE = 12;
     public static final double FONT_CLASS_SIZE = 8;
+    public static final double NAME_PADDING = 5;
+    public static final Color BG_HEAD = Color.LIGHTGREY;
 
-    public Label className = new Label();
-    public Label name = new Label();
+    private Label className = new Label();
+    private Label name = new Label();
 
-    public static Color BG_HEAD = Color.LIGHTSKYBLUE;
+    public Map<String, Label> attribs;
 
     public DataCell(MalAsset asset) {
-       //  setMinWidth(100.0);
-       //  setMinHeight(100.0);
-
+        setStyle("-fx-border-color: black; -fx-border-width: 1");
         className.setText(asset.classDesc.className);
         name.setText(asset.name);
 
-        VBox vertLayout = new VBox(name, className);
-        setBackground(new Background(new BackgroundFill(BG_HEAD, null, null)));
-        vertLayout.setAlignment(Pos.BASELINE_CENTER);
-        vertLayout.setPadding(new Insets(10));
-
         /* Font sizes */
-        className.setFont(new Font(FONT_CLASS_SIZE));
-        className.setTextFill(Color.WHITE);
         name.setFont(new Font(FONT_NAME_SIZE));
-        name.setTextFill(Color.WHITE);
+        name.setTextFill(Color.BLACK);
+        name.setPadding(new Insets(NAME_PADDING, NAME_PADDING, 0, NAME_PADDING));
+        name.setStyle("-fx-font-weight: bold");
+        className.setFont(new Font(FONT_CLASS_SIZE));
+        className.setTextFill(Color.BLACK);
+        className.setPadding(new Insets(0, NAME_PADDING, 0, NAME_PADDING));
+        className.setStyle("-fx-border-color: black; -fx-border-width: 0 0 1 0");
+
+        /* Attack steps and defenses */
+        VBox fields = new VBox();
+        attribs = new HashMap<>(asset.classDesc.attackSteps.length + asset.classDesc.defense.length);
+        for (String s : asset.classDesc.attackSteps) {
+            attribs.put(s, new Label(s));
+        }
+
+        for (String s : asset.classDesc.defense) {
+            attribs.put(s, new Label(s));
+        }
+
+        fields.getChildren().addAll(attribs.values());
+        fields.setStyle("-fx-padding: 5");
+
+        /* Layout */
+        VBox vertLayout = new VBox(name, className, fields);
+        setBackground(new Background(new BackgroundFill(BG_HEAD, null, null)));
+        vertLayout.setAlignment(Pos.TOP_CENTER);
 
         getChildren().add(vertLayout);
     }
