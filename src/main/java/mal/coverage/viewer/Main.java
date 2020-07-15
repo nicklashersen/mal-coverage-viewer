@@ -6,8 +6,6 @@ package mal.coverage.viewer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -26,7 +24,6 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import mal.coverage.viewer.model.MalAsset;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.view.DataCell;
-import mal.coverage.viewer.view.Edge;
 import mal.coverage.viewer.view.Graph;
 
 // import javafx.scene.shape.Rectangle;
@@ -66,6 +63,7 @@ public class Main extends Application {
 	private MenuBar createMenu() {
 		MenuBar menuBar = new MenuBar();
 
+		// File menu
 		Menu fileMenu = new Menu("File");
 		MenuItem fitem1 = new MenuItem("Open");
 
@@ -82,7 +80,15 @@ public class Main extends Application {
 		});
 
 		fileMenu.getItems().add(fitem1);
-		menuBar.getMenus().add(fileMenu);
+
+		// View menu
+		Menu viewMenu = new Menu("View");
+		MenuItem vitem1 = new MenuItem("Rearrange Cells");
+
+		vitem1.setOnAction(e -> graph.layoutCells());
+		viewMenu.getItems().add(vitem1);
+
+		menuBar.getMenus().addAll(fileMenu, viewMenu);
 
 		return menuBar;
 	}
@@ -103,14 +109,12 @@ public class Main extends Application {
 		if (root != null) {
 			graph.clear();
 			MalModel model = MalModel.fromJSON(root);
-			Map<Long, DataCell>  cells = new HashMap<Long, DataCell>(model.assets.size());
 
 			// Add nodes
 			for (MalAsset asset : model.assets) {
 				DataCell cell = new DataCell(asset);
 
-				cells.put(asset.id, cell);
-				graph.addCell(cell);
+				graph.addCell(asset.id, cell);
 			}
 
 			this.root.applyCss();
@@ -119,7 +123,7 @@ public class Main extends Application {
 			for (MalAsset asset : model.assets) {
 				for (long nodeId : asset.connections) {
 					if (asset.id > nodeId) {	
-						graph.cellLayer.getChildren().add(new Edge(cells.get(asset.id), cells.get(nodeId)));
+						graph.addEdge(asset.id, nodeId);
 					}
 				}
 			}

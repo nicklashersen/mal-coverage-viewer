@@ -1,10 +1,10 @@
 package mal.coverage.viewer.layout;
 
 import javafx.scene.Node;
-import java.util.List;
+import java.util.Collection;
 
 public abstract class Layout {
-    public void execute(List<Node> nodes) {
+    public void execute(Collection<? extends Node> nodes) {
         for (Node n : nodes) execute(n);
     }
 
