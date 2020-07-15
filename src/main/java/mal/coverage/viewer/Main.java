@@ -34,13 +34,12 @@ import mal.coverage.viewer.view.Graph;
 
 public class Main extends Application {
 	private Stage stage;
-	private Graph graph;
+	private Graph graph = new Graph();
+	private BorderPane root = new BorderPane();
 
 	@Override
 	public void start(Stage primaryStage) {
-		BorderPane root = new BorderPane();
 		MenuBar menuBar = createMenu();
-		graph = new Graph();
 
 		root.setCenter(graph.getScrollPane());
 		root.setTop(menuBar);
@@ -114,6 +113,8 @@ public class Main extends Application {
 				graph.addCell(cell);
 			}
 
+			this.root.applyCss();
+			this.root.layout();
 			// Add edges
 			for (MalAsset asset : model.assets) {
 				for (long nodeId : asset.connections) {

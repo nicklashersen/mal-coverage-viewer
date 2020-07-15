@@ -13,17 +13,22 @@ import mal.coverage.viewer.model.MalAsset;
 public class DataCell extends Cell {
     protected MalAsset asset;
 
-    public static final double FONT_NAME_SIZE = 24;
-    public static final double FONT_CLASS_SIZE = 12;
+    public static final double FONT_NAME_SIZE = 12;
+    public static final double FONT_CLASS_SIZE = 8;
+
+    public Label className = new Label();
+    public Label name = new Label();
 
     public static Color BG_HEAD = Color.LIGHTSKYBLUE;
 
     public DataCell(MalAsset asset) {
-        Label className = new Label(asset.classDesc.className);
-        Label name = new Label(asset.name);
+       //  setMinWidth(100.0);
+       //  setMinHeight(100.0);
+
+        className.setText(asset.classDesc.className);
+        name.setText(asset.name);
 
         VBox vertLayout = new VBox(name, className);
-
         setBackground(new Background(new BackgroundFill(BG_HEAD, null, null)));
         vertLayout.setAlignment(Pos.BASELINE_CENTER);
         vertLayout.setPadding(new Insets(10));

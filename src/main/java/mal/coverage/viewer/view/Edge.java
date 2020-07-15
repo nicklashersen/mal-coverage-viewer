@@ -19,10 +19,10 @@ public class Edge extends Line {
     }
 
     public void update() {
-        setStartX(src.getLayoutX() + src.getWidth());
-        setStartY(src.getLayoutY() + src.getHeight());
+        setStartX(src.getBoundsInParent().getCenterX());
+        setStartY(src.getBoundsInParent().getCenterY());
 
-        setEndX(end.getLayoutX() + end.getWidth() / 2);
-        setEndY(end.getLayoutY() + end.getHeight() / 2);
+        setEndX(end.getBoundsInParent().getCenterX());
+        setEndY(end.getBoundsInParent().getCenterY());
     }
 }
