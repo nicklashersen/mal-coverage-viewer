@@ -21,7 +21,14 @@ public class DataCell extends Cell {
     public static final double NAME_PADDING = 5;
     public static final Color BG_HEAD = Color.LIGHTGREY;
     public static final Color COLOR_COMPROMISED = Color.RED;
+    public static final Color COLOR_COMPROMISED_EFFORT = Color.YELLOW;
     public static final Color COLOR_UNCOMPROMISED = Color.GREEN;
+
+    /*
+     * Same valus as used in assertCompromisedWithEffort (MAL:AttackStep.java) 
+     */
+    public static final double COMPROMISED_WITH_EFFORT_LOW = 1.0 / 1444;
+    public static final double COMPROMISED_WITH_EFFORT_HIGH = 1000.0;
 
     private Label className = new Label();
     private Label name = new Label();
@@ -45,18 +52,7 @@ public class DataCell extends Cell {
 
         /* Attack steps and defenses */
         VBox fields = new VBox();
-        attribs = new HashMap<>(asset.classDesc.attackSteps.length + asset.classDesc.defense.length);
-        for (String s : asset.classDesc.attackSteps) {
-            Label step = new Label(s);
-
-            if (asset.coverage.containsKey(s.toLowerCase())) {
-                step.setTextFill(COLOR_COMPROMISED);
-            } else {
-                step.setTextFill(COLOR_UNCOMPROMISED);
-            }
-
-            attribs.put(s, step);
-        }
+        attribs = _compAttackSteps(asset);
 
         for (String s : asset.classDesc.defense) {
             attribs.put(s, new Label(s));
@@ -71,5 +67,38 @@ public class DataCell extends Cell {
         vertLayout.setAlignment(Pos.TOP_CENTER);
 
         getChildren().add(vertLayout);
+    }
+
+    /**
+     * Compute attack step node attributes and color based on coverage.
+     * 
+     * @param asset mal asset desciption.
+     * @return attribute, label map.
+     */
+    private Map<String, Label> _compAttackSteps(MalAsset asset) {
+        Map<String, Label> attribs;
+
+        attribs = new HashMap<>(asset.classDesc.attackSteps.length + asset.classDesc.defense.length);
+        for (String s : asset.classDesc.attackSteps) {
+            Label step = new Label(s);
+
+            if (asset.coverage.containsKey(s.toLowerCase())) {
+                double ttc = asset.coverage.get(s.toLowerCase());
+
+                if (ttc >= COMPROMISED_WITH_EFFORT_LOW && ttc < COMPROMISED_WITH_EFFORT_HIGH) {
+                    step.setTextFill(COLOR_COMPROMISED_EFFORT);
+
+                } else {
+                    step.setTextFill(COLOR_COMPROMISED);
+                }
+
+            } else {
+                step.setTextFill(COLOR_UNCOMPROMISED);
+            }
+
+            attribs.put(s, step);
+        }
+
+        return attribs;
     }
 }
