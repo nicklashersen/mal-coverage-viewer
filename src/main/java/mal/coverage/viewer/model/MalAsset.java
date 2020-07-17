@@ -1,5 +1,6 @@
 package mal.coverage.viewer.model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -10,12 +11,14 @@ public class MalAsset {
     public final long id;
     public final MalAssetDescription classDesc;
     public final long[] connections;
+    public final Map<String, Double> coverage;
 
-    public MalAsset(MalAssetDescription desc, String name, long id, long[] connections) {
+    public MalAsset(MalAssetDescription desc, String name, long id, long[] connections, Map<String, Double> coverage) {
         classDesc = desc;
         this.name = name;
         this.id = id;
         this.connections = connections;
+        this.coverage = coverage;
     }
 
     /**
@@ -36,13 +39,23 @@ public class MalAsset {
         id = object.getLong("hash");
         JSONArray jsonConnections = object.getJSONArray("connections");
 
+        // Find connected assets
         long[] connections = new long[jsonConnections.length()];
 
         for (int i = 0; i < jsonConnections.length(); i++) {
             connections[i] = jsonConnections.getLong(i);
         }
 
-        return new MalAsset(descs.get(className), name, id, connections);
+        // Fetch compromised fields
+        JSONArray jsonCompromised = object.getJSONArray("coverage");
+        Map<String, Double> coverage = new HashMap<>(jsonCompromised.length());
+
+        for (int i = 0; i < jsonCompromised.length(); i++) {
+            JSONObject jsonCompObject = jsonCompromised.getJSONObject(i);
+            coverage.put(jsonCompObject.getString("step"), jsonCompObject.getDouble("ttc"));
+        }
+
+        return new MalAsset(descs.get(className), name, id, connections, coverage);
     }
     
 }

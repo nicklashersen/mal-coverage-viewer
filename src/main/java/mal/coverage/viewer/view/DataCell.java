@@ -20,6 +20,8 @@ public class DataCell extends Cell {
     public static final double FONT_CLASS_SIZE = 8;
     public static final double NAME_PADDING = 5;
     public static final Color BG_HEAD = Color.LIGHTGREY;
+    public static final Color COLOR_COMPROMISED = Color.RED;
+    public static final Color COLOR_UNCOMPROMISED = Color.GREEN;
 
     private Label className = new Label();
     private Label name = new Label();
@@ -45,7 +47,15 @@ public class DataCell extends Cell {
         VBox fields = new VBox();
         attribs = new HashMap<>(asset.classDesc.attackSteps.length + asset.classDesc.defense.length);
         for (String s : asset.classDesc.attackSteps) {
-            attribs.put(s, new Label(s));
+            Label step = new Label(s);
+
+            if (asset.coverage.containsKey(s.toLowerCase())) {
+                step.setTextFill(COLOR_COMPROMISED);
+            } else {
+                step.setTextFill(COLOR_UNCOMPROMISED);
+            }
+
+            attribs.put(s, step);
         }
 
         for (String s : asset.classDesc.defense) {
