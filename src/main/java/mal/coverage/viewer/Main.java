@@ -83,10 +83,13 @@ public class Main extends Application {
 
 		// View menu
 		Menu viewMenu = new Menu("View");
+		MenuItem vzoomreset = new MenuItem("Zoom Reset");
 		MenuItem vitem1 = new MenuItem("Rearrange Cells");
 
+		vzoomreset.setOnAction(e -> graph.resetZoom());
 		vitem1.setOnAction(e -> graph.layoutCells());
-		viewMenu.getItems().add(vitem1);
+
+		viewMenu.getItems().addAll(vzoomreset, vitem1);
 
 		menuBar.getMenus().addAll(fileMenu, viewMenu);
 

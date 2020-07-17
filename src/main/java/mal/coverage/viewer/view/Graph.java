@@ -139,6 +139,13 @@ public class Graph {
     }
 
     /**
+     * Reset zoom.
+     */
+    public void resetZoom() {
+        scrollPane.zoomToActual();
+    }
+
+    /**
      * Run the cell layout algorithm.
      */
     public void layoutCells() {
