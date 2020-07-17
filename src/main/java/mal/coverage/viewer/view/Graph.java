@@ -1,6 +1,7 @@
 package mal.coverage.viewer.view;
 
 import java.util.Map;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,7 @@ import mal.coverage.viewer.layout.RandomLayout;
 
 public class Graph {
     private ZoomableScrollPane scrollPane;
+    private MouseGesture mouseGesture;
 
     private Group canvas = new Group();
     private Map<Long, Cell> cells = new HashMap<>();
@@ -38,6 +40,7 @@ public class Graph {
      */
     public Graph(Layout l) {
         cellLayout = l;
+        mouseGesture = new MouseGesture(this);
 
         canvas.getChildren().add(cellLayer);
 
@@ -65,6 +68,8 @@ public class Graph {
 
         cellLayout.execute(cell);
         cellLayer.getChildren().add(cell);
+
+        mouseGesture.makeDraggable(cell);
     }
 
     /**
@@ -96,6 +101,9 @@ public class Graph {
      */
     public void addEdge(Cell c1, Cell c2) {
         Edge e = new Edge(c1, c2);
+        c1.edges.add(e);
+        c2.edges.add(e);
+
         edges.add(e);
 
         cellLayer.getChildren().add(e);
