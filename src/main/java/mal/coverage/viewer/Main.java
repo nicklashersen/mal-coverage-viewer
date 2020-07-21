@@ -138,7 +138,8 @@ public class Main extends Application {
 			}
 
 			if (_simulations.size() != 0) {
-				displayMALModel(_simulations.values().iterator().next());
+				simulationList.getSelectionModel().select(0);
+				// displayMALModel(_simulations.values().iterator().next());
 			}
 
 		} else {
