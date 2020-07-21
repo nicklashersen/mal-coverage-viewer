@@ -52,6 +52,15 @@ public class Main extends Application {
 		root.setLeft(simulationList);
 
 		simulationList.setPrefWidth(150);
+		simulationList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+			if (_simulations.containsKey(newV)) {
+				displayMALModel(_simulations.get(newV));
+			} else {
+				new Alert(Alert.AlertType.ERROR, String.format(
+					"Simulation with name '%s' does not exist.", newV)).showAndWait();
+			}
+		});
+
 		Scene scene = new Scene(root, 1024, 769);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
@@ -111,14 +120,15 @@ public class Main extends Application {
 
 		try {
 			jsonSimulations = new JSONArray(new JSONTokener(new BufferedReader(new FileReader(file))));
-		} catch (Exception e) {}
+		} catch (Exception e) {
+		}
 
 		if (jsonSimulations != null) {
 			simulationList.getItems().clear();
 			_simulations.clear();
 
 			// TODO: For custom names:
-			// 		Ensure unique
+			// Ensure unique
 			for (int i = 0; i < jsonSimulations.length(); i++) {
 				String name = "Simulation " + i;
 				MalModel mdl = MalModel.fromJSON(jsonSimulations.getJSONObject(i));
@@ -132,8 +142,8 @@ public class Main extends Application {
 			}
 
 		} else {
-			new Alert(Alert.AlertType.ERROR, 
-				String.format("Couldn't parse file '%s'", file.getAbsolutePath())).showAndWait();
+			new Alert(Alert.AlertType.ERROR, String.format("Couldn't parse file '%s'", file.getAbsolutePath()))
+					.showAndWait();
 		}
 	}
 
@@ -151,12 +161,12 @@ public class Main extends Application {
 			graph.addCell(asset.id, cell);
 		}
 
-		// We need to apply the layout in order to get the correct 
+		// We need to apply the layout in order to get the correct
 		// layout values (width, height, etc) from javafx elements.
 		root.applyCss();
 		root.layout();
 
-		// Add edges between nodes 
+		// Add edges between nodes
 		for (MalAsset asset : model.assets) {
 			for (long nodeId : asset.connections) {
 				if (asset.id > nodeId) {
@@ -164,7 +174,6 @@ public class Main extends Application {
 				}
 			}
 		}
-
 	}
 
 	public static void main(String[] args) {
