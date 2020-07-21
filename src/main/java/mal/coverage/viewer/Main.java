@@ -6,18 +6,25 @@ package mal.coverage.viewer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.json.JSONTokener;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.BorderPane;
 
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -33,6 +40,8 @@ public class Main extends Application {
 	private Stage stage;
 	private Graph graph = new Graph();
 	private BorderPane root = new BorderPane();
+	private ListView simulationList = new ListView();
+	private Map<String, MalModel> _simulations = new HashMap<>();
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -40,7 +49,9 @@ public class Main extends Application {
 
 		root.setCenter(graph.getScrollPane());
 		root.setTop(menuBar);
+		root.setLeft(simulationList);
 
+		simulationList.setPrefWidth(150);
 		Scene scene = new Scene(root, 1024, 769);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
@@ -48,11 +59,6 @@ public class Main extends Application {
 		primaryStage.show();
 
 		stage = primaryStage;
-
-		// Rectangle rect = new Rectangle(80, 30);
-
-		// graph.cellLayer.getChildren().add(rect);
-
 	}
 
 	/**
@@ -90,7 +96,6 @@ public class Main extends Application {
 		vitem1.setOnAction(e -> graph.layoutCells());
 
 		viewMenu.getItems().addAll(vzoomreset, vitem1);
-
 		menuBar.getMenus().addAll(fileMenu, viewMenu);
 
 		return menuBar;
@@ -102,35 +107,64 @@ public class Main extends Application {
 	 * @param file JSON file
 	 */
 	private void loadFile(File file) {
-		JSONObject root = null;
+		JSONArray jsonSimulations = null;
 
 		try {
-			root = new JSONObject(new JSONTokener(new BufferedReader(new FileReader(file))));
-		} catch (Exception e) {
-		}
+			jsonSimulations = new JSONArray(new JSONTokener(new BufferedReader(new FileReader(file))));
+		} catch (Exception e) {}
 
-		if (root != null) {
-			graph.clear();
-			MalModel model = MalModel.fromJSON(root);
+		if (jsonSimulations != null) {
+			simulationList.getItems().clear();
+			_simulations.clear();
 
-			// Add nodes
-			for (MalAsset asset : model.assets) {
-				DataCell cell = new DataCell(asset);
+			// TODO: For custom names:
+			// 		Ensure unique
+			for (int i = 0; i < jsonSimulations.length(); i++) {
+				String name = "Simulation " + i;
+				MalModel mdl = MalModel.fromJSON(jsonSimulations.getJSONObject(i));
 
-				graph.addCell(asset.id, cell);
+				_simulations.put(name, mdl);
+				simulationList.getItems().add(name);
 			}
 
-			this.root.applyCss();
-			this.root.layout();
-			// Add edges
-			for (MalAsset asset : model.assets) {
-				for (long nodeId : asset.connections) {
-					if (asset.id > nodeId) {	
-						graph.addEdge(asset.id, nodeId);
-					}
+			if (_simulations.size() != 0) {
+				displayMALModel(_simulations.values().iterator().next());
+			}
+
+		} else {
+			new Alert(Alert.AlertType.ERROR, 
+				String.format("Couldn't parse file '%s'", file.getAbsolutePath())).showAndWait();
+		}
+	}
+
+	/**
+	 * Display a MAL model in the graph view.
+	 * 
+	 * @param model MalModel to display
+	 */
+	private void displayMALModel(MalModel model) {
+		graph.clear();
+
+		for (MalAsset asset : model.assets) {
+			DataCell cell = new DataCell(asset);
+
+			graph.addCell(asset.id, cell);
+		}
+
+		// We need to apply the layout in order to get the correct 
+		// layout values (width, height, etc) from javafx elements.
+		root.applyCss();
+		root.layout();
+
+		// Add edges between nodes 
+		for (MalAsset asset : model.assets) {
+			for (long nodeId : asset.connections) {
+				if (asset.id > nodeId) {
+					graph.addEdge(asset.id, nodeId);
 				}
 			}
 		}
+
 	}
 
 	public static void main(String[] args) {

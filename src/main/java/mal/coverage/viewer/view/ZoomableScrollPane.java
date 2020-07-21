@@ -3,6 +3,7 @@ package mal.coverage.viewer.view;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.Node;
 import javafx.scene.Group;
 
@@ -29,9 +30,9 @@ public class ZoomableScrollPane extends ScrollPane {
 		zoomGroup = new Group(this.content);
 		contentGroup = new Group(zoomGroup);
 
-		contentGroup.setOnScroll(e -> {
-			e.consume();
+		addEventFilter(ScrollEvent.ANY, e -> {
 			scroll(e.getDeltaY(), new Point2D(e.getX(), e.getY()));
+			e.consume();
 		});
 
 		setContent(contentGroup);

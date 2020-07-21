@@ -1,9 +1,21 @@
 .scroll-pane > .viewport {
-    -fx-background-color: #262626;
+    -fx-background-color: #1F1F1FFF;
 }
 
+.list-view,
+.list-view .list-cell:odd,
+.list-view .list-cell:even {
+    -fx-background-color: #3A3A3AFF;
+    -fx-text-fill: white;
+}
+
+.list-view .list-cell:selected {
+    -fx-background-color: #555555FF;
+}
+
+
 .edge {
-    -fx-stroke-width: 2px;
+    -fx-stroke-width: 1px;
 }
 
 .edge-unvisited {
