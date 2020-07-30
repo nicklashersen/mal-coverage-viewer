@@ -130,11 +130,10 @@ public class Main extends Application {
 			// TODO: For custom names:
 			// Ensure unique
 			for (int i = 0; i < jsonSimulations.length(); i++) {
-				String name = "Simulation " + i;
 				MalModel mdl = MalModel.fromJSON(jsonSimulations.getJSONObject(i));
 
-				_simulations.put(name, mdl);
-				simulationList.getItems().add(name);
+				_simulations.put(mdl.name, mdl);
+				simulationList.getItems().add(mdl.name);
 			}
 
 			if (_simulations.size() != 0) {

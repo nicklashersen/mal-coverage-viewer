@@ -10,11 +10,14 @@ import org.json.JSONObject;
 public class MalModel {
     public final Map<String, MalAssetDescription> classDescriptions;
     public final List<MalAsset> assets;
+	public final String name;
 
-    public MalModel(Map<String,MalAssetDescription> descs,
+    public MalModel(String name,
+					Map<String,MalAssetDescription> descs,
                     List<MalAsset> assets) {
         classDescriptions = descs;
         this.assets = assets;
+		this.name = name;
     }
 
     /**
@@ -27,6 +30,7 @@ public class MalModel {
         // Mal class descriptions
         JSONArray jsonAssetClasses = obj.getJSONArray("assets");
         JSONObject[] assetClasses = new JSONObject[jsonAssetClasses.length()];
+		String name = obj.getString("testName");
 
         for (int i = 0; i < jsonAssetClasses.length(); i++) {
             assetClasses[i] = jsonAssetClasses.getJSONObject(i);
@@ -44,6 +48,6 @@ public class MalModel {
             assets.add(MalAsset.fromJSON(object, classDescs));
         }
 
-        return new MalModel(classDescs, assets);
+        return new MalModel(name, classDescs, assets);
     }
 }
