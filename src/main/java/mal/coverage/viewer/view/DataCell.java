@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import mal.coverage.viewer.model.MalAsset;
+import mal.coverage.viewer.model.MalAttackStep;
 
 public class DataCell extends Cell {
     protected MalAsset asset;
@@ -55,7 +56,7 @@ public class DataCell extends Cell {
         attribs = _compAttackSteps(asset);
 
         for (String s : asset.classDesc.defense) {
-            attribs.put(s, new Label(s));
+            attribs.put(s, new Label("# " + s));
         }
 
         fields.getChildren().addAll(attribs.values());
@@ -79,24 +80,24 @@ public class DataCell extends Cell {
         Map<String, Label> attribs;
 
         attribs = new HashMap<>(asset.classDesc.attackSteps.length + asset.classDesc.defense.length);
-        for (String s : asset.classDesc.attackSteps) {
-            Label step = new Label(s);
+        for (MalAttackStep step : asset.classDesc.attackSteps) {
+            Label lblStep = new Label(String.format("%s %s", step.type, step.name));
 
-            if (asset.coverage.containsKey(s.toLowerCase())) {
-                double ttc = asset.coverage.get(s.toLowerCase());
+            if (asset.coverage.containsKey(step.name)) {
+                double ttc = asset.coverage.get(step.name);
 
                 if (ttc >= COMPROMISED_WITH_EFFORT_LOW && ttc < COMPROMISED_WITH_EFFORT_HIGH) {
-                    step.setTextFill(COLOR_COMPROMISED_EFFORT);
+                    lblStep.setTextFill(COLOR_COMPROMISED_EFFORT);
 
                 } else {
-                    step.setTextFill(COLOR_COMPROMISED);
+                    lblStep.setTextFill(COLOR_COMPROMISED);
                 }
 
             } else {
-                step.setTextFill(COLOR_UNCOMPROMISED);
+                lblStep.setTextFill(COLOR_UNCOMPROMISED);
             }
 
-            attribs.put(s, step);
+            attribs.put(step.name, lblStep);
         }
 
         return attribs;

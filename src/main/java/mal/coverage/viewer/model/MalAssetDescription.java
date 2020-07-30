@@ -8,10 +8,10 @@ import org.json.JSONObject;
 
 public class MalAssetDescription {
     public final String className;
-    public final String[] attackSteps;
+    public final MalAttackStep[] attackSteps;
     public final String[] defense;
 
-    public MalAssetDescription(String className, String[] attack, String[] defense) {
+    public MalAssetDescription(String className, MalAttackStep[] attack, String[] defense) {
         this.className = className;
         this.attackSteps = attack;
         this.defense = defense;
@@ -21,11 +21,12 @@ public class MalAssetDescription {
         String className = obj.getString("className");
         JSONArray attackSteps = obj.getJSONArray("attack");
 
-        String[] attack = new String[attackSteps.length()];
+        MalAttackStep[] attack = new MalAttackStep[attackSteps.length()];
         for (int i = 0; i < attackSteps.length(); i++) {
-            attack[i] = attackSteps.getString(i);
-        }
+            JSONObject jsonAttackStep = attackSteps.getJSONObject(i);
 
+            attack[i] = new MalAttackStep(jsonAttackStep.getString("name"), jsonAttackStep.getString("type"));
+        }
 
         JSONArray defenseJSON = obj.getJSONArray("defense");
         String[] defense = new String[defenseJSON.length()];
