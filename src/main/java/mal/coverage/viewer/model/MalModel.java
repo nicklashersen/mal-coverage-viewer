@@ -1,23 +1,22 @@
 package mal.coverage.viewer.model;
 
 import java.util.Map;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class MalModel {
-    public final Map<String, MalAssetDescription> classDescriptions;
-    public final List<MalAsset> assets;
-	public final String name;
+    // MalAsset id -> asset
+    public final Map<Integer, MalAsset> assets;
+    public final String name;
 
     public MalModel(String name,
-					Map<String,MalAssetDescription> descs,
-                    List<MalAsset> assets) {
-        classDescriptions = descs;
-        this.assets = assets;
-		this.name = name;
+		    Map<Integer, MalAsset> assets) {
+
+	this.assets = assets;
+	this.name = name;
     }
 
     /**
@@ -27,27 +26,19 @@ public class MalModel {
      * @return A MalModel 
      */
     public static MalModel fromJSON(JSONObject obj) {
-        // Mal class descriptions
-        JSONArray jsonAssetClasses = obj.getJSONArray("assets");
-        JSONObject[] assetClasses = new JSONObject[jsonAssetClasses.length()];
-		String name = obj.getString("testName");
+	// Mal class descriptions
+	String name = obj.getString("testName");
+	JSONArray jsonModel = obj.getJSONArray("model");
 
-        for (int i = 0; i < jsonAssetClasses.length(); i++) {
-            assetClasses[i] = jsonAssetClasses.getJSONObject(i);
-        }
+	Map<Integer, MalAsset> malAssets = new HashMap<>(jsonModel.length());
 
-        Map<String, MalAssetDescription> classDescs = MalAssetDescription.fromJSON(assetClasses);
+	for (int i = 0; i < jsonModel.length(); i++) {
+	    JSONObject jsonMalAsset = jsonModel.getJSONObject(i);
+	    MalAsset asset = MalAsset.fromJSON(jsonMalAsset);
 
-        // Mal object instances
-        JSONArray jsonAssetInstances = obj.getJSONArray("model");
-        List<MalAsset> assets = new ArrayList<>(jsonAssetInstances.length());
+	    malAssets.put(asset.hash, asset);
+	}
 
-        for (int i = 0; i< jsonAssetInstances.length(); i++) {
-            JSONObject object = jsonAssetInstances.getJSONObject(i);
-
-            assets.add(MalAsset.fromJSON(object, classDescs));
-        }
-
-        return new MalModel(name, classDescs, assets);
+	return new MalModel(name, malAssets);
     }
 }

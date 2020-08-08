@@ -18,7 +18,7 @@ public class Graph {
     private MouseGesture mouseGesture;
 
     private Group canvas = new Group();
-    private Map<Long, Cell> cells = new HashMap<>();
+    private Map<Integer, Cell> cells = new HashMap<>();
     private List<Edge> edges = new LinkedList<>();
 
     private Pane cellLayer = new Pane();
@@ -63,7 +63,7 @@ public class Graph {
      * Add a cell to the graph view.
      * @param cell
      */
-    public void addCell(Long id, Cell cell) {
+    public void addCell(int id, Cell cell) {
         cells.put(id, cell);
 
         cellLayout.execute(cell);
@@ -80,7 +80,7 @@ public class Graph {
      * @param id1 cell id 1
      * @param id2 cell id 2
      */
-    public void addEdge(long id1, long id2) {
+    public void addEdge(int id1, int id2) {
         if (id1 == id2) {
             throw new IllegalArgumentException("Cannot add edge to itself");
         }
@@ -116,7 +116,7 @@ public class Graph {
      * @param id cell id.
      * @return cell associated with the corresponding id.
      */
-    public Cell getCell(Long id) {
+    public Cell getCell(int id) {
         return cells.get(id);
     }
 

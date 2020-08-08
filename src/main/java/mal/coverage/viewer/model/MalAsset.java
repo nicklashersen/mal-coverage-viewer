@@ -8,54 +8,68 @@ import org.json.JSONObject;
 
 public class MalAsset {
     public final String name;
-    public final long id;
-    public final MalAssetDescription classDesc;
-    public final long[] connections;
-    public final Map<String, Double> coverage;
+    public final String assetName;
+    public final int hash;
+    public final int[] connections;
+    public final Map<Integer, MalAttackStep> steps;
+    public final Map<String, MalDefense> defense;
 
-    public MalAsset(MalAssetDescription desc, String name, long id, long[] connections, Map<String, Double> coverage) {
-        classDesc = desc;
-        this.name = name;
-        this.id = id;
-        this.connections = connections;
-        this.coverage = coverage;
-    }
+    public MalAsset(String name,
+		    String assetName,
+		    int hash,
+		    int[] connections,
+		    Map<Integer, MalAttackStep> steps,
+		    Map<String, MalDefense> defense) {
+
+	    this.name = name;
+	    this.assetName = assetName;
+	    this.hash = hash;
+	    this.connections = connections;
+	    this.steps = steps;
+	    this.defense = defense;
+	}
 
     /**
      * @param object json object descibing a MAL object instance
      * @param descs MAL class descriptions
      * @return
      */
-    public static MalAsset fromJSON(JSONObject object, Map<String, MalAssetDescription> descs) {
-        String name, className;
-        long id;
+    public static MalAsset fromJSON(JSONObject object) {
+	String name = object.getString("name");
+	String className = object.getString("class");
+	int hash = object.getInt("hash");
 
-        className = object.getString("class");
-        if (!descs.containsKey(className)) {
-            throw new RuntimeException("Unrecognized MAL asset class");
-        }
+	// Find connected assets
+	JSONArray jsonConnections = object.getJSONArray("connections");
+	int[] connections = new int[jsonConnections.length()];
 
-        name = object.getString("name");
-        id = object.getLong("hash");
-        JSONArray jsonConnections = object.getJSONArray("connections");
+	for (int i = 0; i < jsonConnections.length(); i++) {
+	    connections[i] = jsonConnections.getInt(i);
+	}
 
-        // Find connected assets
-        long[] connections = new long[jsonConnections.length()];
+	// Find attack steps
+	JSONArray jsonAttackSteps = object.getJSONArray("steps");
+	Map<Integer, MalAttackStep> attackSteps = new HashMap<>(jsonAttackSteps.length());
 
-        for (int i = 0; i < jsonConnections.length(); i++) {
-            connections[i] = jsonConnections.getLong(i);
-        }
+	for (int i = 0; i < jsonAttackSteps.length(); i++) {
+	    JSONObject jsonAttackStep = jsonAttackSteps.getJSONObject(i);
+	    MalAttackStep attackStep = MalAttackStep.fromJSON(jsonAttackStep);
 
-        // Fetch compromised fields
-        JSONArray jsonCompromised = object.getJSONArray("coverage");
-        Map<String, Double> coverage = new HashMap<>(jsonCompromised.length());
+	    attackSteps.put(attackStep.hash, attackStep);
+	}
 
-        for (int i = 0; i < jsonCompromised.length(); i++) {
-            JSONObject jsonCompObject = jsonCompromised.getJSONObject(i);
-            coverage.put(jsonCompObject.getString("step"), jsonCompObject.getDouble("ttc"));
-        }
+	// Find defenses
+	JSONArray jsonDefenses = object.getJSONArray("defense");
+	Map<String, MalDefense> defenses = new HashMap<>(jsonDefenses.length());
 
-        return new MalAsset(descs.get(className), name, id, connections, coverage);
+	for (int i = 0; i < jsonDefenses.length(); i++) {
+	    JSONObject jsonDefense = jsonDefenses.getJSONObject(i);
+	    MalDefense defense = MalDefense.fromJSON(jsonDefense);
+
+	    defenses.put(defense.name, defense);
+	}
+
+	return new MalAsset(name, className, hash, connections, attackSteps, defenses);
     }
     
 }

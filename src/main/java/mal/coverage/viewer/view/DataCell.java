@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import mal.coverage.viewer.model.MalAsset;
+import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalAttackStep;
 
 public class DataCell extends Cell {
@@ -38,7 +39,7 @@ public class DataCell extends Cell {
 
     public DataCell(MalAsset asset) {
         setStyle("-fx-border-color: black; -fx-border-width: 1");
-        className.setText(asset.classDesc.className);
+        className.setText(asset.assetName);
         name.setText(asset.name);
 
         /* Font sizes */
@@ -55,8 +56,8 @@ public class DataCell extends Cell {
         VBox fields = new VBox();
         attribs = _compAttackSteps(asset);
 
-        for (String s : asset.classDesc.defense) {
-            attribs.put(s, new Label("# " + s));
+        for (MalDefense s : asset.defense.values()) {
+            attribs.put(s.name, new Label("# " + s.name));
         }
 
         fields.getChildren().addAll(attribs.values());
@@ -79,27 +80,20 @@ public class DataCell extends Cell {
     private Map<String, Label> _compAttackSteps(MalAsset asset) {
         Map<String, Label> attribs;
 
-        attribs = new HashMap<>(asset.classDesc.attackSteps.length + asset.classDesc.defense.length);
-        for (MalAttackStep step : asset.classDesc.attackSteps) {
+        attribs = new HashMap<>(asset.steps.size() + asset.defense.size());
+        for (MalAttackStep step : asset.steps.values()) {
             Label lblStep = new Label(String.format("%s %s", step.type, step.name));
 
-            if (asset.coverage.containsKey(step.name)) {
-                double ttc = asset.coverage.get(step.name);
+	    if (step.ttc < COMPROMISED_WITH_EFFORT_LOW) {
+		lblStep.setTextFill(COLOR_COMPROMISED);
+	    } else if (step.ttc < COMPROMISED_WITH_EFFORT_HIGH) {
+		lblStep.setTextFill(COLOR_COMPROMISED_EFFORT);
+	    } else {
+		lblStep.setTextFill(COLOR_UNCOMPROMISED);
+	    }
+	    attribs.put(step.name, lblStep);
+	}
 
-                if (ttc >= COMPROMISED_WITH_EFFORT_LOW && ttc < COMPROMISED_WITH_EFFORT_HIGH) {
-                    lblStep.setTextFill(COLOR_COMPROMISED_EFFORT);
-
-                } else {
-                    lblStep.setTextFill(COLOR_COMPROMISED);
-                }
-
-            } else {
-                lblStep.setTextFill(COLOR_UNCOMPROMISED);
-            }
-
-            attribs.put(step.name, lblStep);
-        }
-
-        return attribs;
+	return attribs;
     }
 }
