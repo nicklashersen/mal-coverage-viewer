@@ -6,177 +6,181 @@ package mal.coverage.viewer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
-import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONTokener;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.stage.Stage;
-
 import javafx.scene.control.Alert;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
-
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
 import mal.coverage.viewer.model.MalAsset;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
-// import javafx.scene.shape.Rectangle;
-// import javafx.scene.paint.Color;
-
 public class Main extends Application {
-    private Stage stage;
-    private Graph graph = new Graph();
-    private BorderPane root = new BorderPane();
-    private ListView simulationList = new ListView();
-    private Map<String, MalModel> _simulations = new HashMap<>();
+	private Stage stage;
+	private Graph graph = new Graph();
+	private BorderPane root = new BorderPane();
+	private TreeView simulationTree = new TreeView();
+	private TreeItem<String> _simTreeRoot = new TreeItem<>();
+	private Map<String, MalModel> _simulations = new HashMap<>();
 
-    @Override
-    public void start(Stage primaryStage) {
-	MenuBar menuBar = createMenu();
+	@Override
+	public void start(Stage primaryStage) {
+		MenuBar menuBar = createMenu();
 
-	root.setCenter(graph.getScrollPane());
-	root.setTop(menuBar);
-	root.setLeft(simulationList);
+		root.setCenter(graph.getScrollPane());
+		root.setTop(menuBar);
+		root.setLeft(simulationTree);
 
-	simulationList.setPrefWidth(150);
-	simulationList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
-		if (_simulations.containsKey(newV)) {
-		    displayMALModel(_simulations.get(newV));
+		simulationTree.setPrefWidth(200);
+		simulationTree.setRoot(_simTreeRoot);
+		simulationTree.setShowRoot(false);
+
+		simulationTree.getSelectionModel().selectedItemProperty()
+				.addListener((obs, old, newV) -> {
+					TreeItem<String> selected = (TreeItem<String>) newV;
+						
+					if (_simulations.containsKey(selected.getValue())) {
+						displayMALModel(_simulations.get(selected.getValue()));
+					} else {
+						new Alert(Alert.AlertType.ERROR,
+								String.format("Simulation with name '%s' does not exist.", newV)).showAndWait();
+
+					}
+				});
+
+		Scene scene = new Scene(root, 1024, 769);
+		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+
+		primaryStage.setScene(scene);
+		primaryStage.show();
+
+		stage = primaryStage;
+	}
+
+	/**
+	 * Create the window menu bar
+	 * 
+	 * @return a javafx window menu object
+	 */
+	private MenuBar createMenu() {
+		MenuBar menuBar = new MenuBar();
+
+		// File menu
+		Menu fileMenu = new Menu("File");
+		MenuItem fitem1 = new MenuItem("Open");
+
+		fitem1.setOnAction(e -> {
+			FileChooser fChooser = new FileChooser();
+			fChooser.setTitle("Open graph file");
+			fChooser.getExtensionFilters().addAll(new ExtensionFilter("JSON Files", "*.json"),
+					new ExtensionFilter("All Files", "*.*"));
+
+			File selectedFile = fChooser.showOpenDialog(stage);
+
+			if (selectedFile != null)
+				loadFile(selectedFile);
+		});
+
+		fileMenu.getItems().add(fitem1);
+
+		// View menu
+		Menu viewMenu = new Menu("View");
+		MenuItem vzoomreset = new MenuItem("Zoom Reset");
+		MenuItem vitem1 = new MenuItem("Rearrange Cells");
+
+		vzoomreset.setOnAction(e -> graph.resetZoom());
+		vitem1.setOnAction(e -> graph.layoutCells());
+
+		viewMenu.getItems().addAll(vzoomreset, vitem1);
+		menuBar.getMenus().addAll(fileMenu, viewMenu);
+
+		return menuBar;
+	}
+
+	/**
+	 * Construct MalModels from a JSON file containing MAl simulations.
+	 * 
+	 * @param file JSON file
+	 */
+	private void loadFile(File file) {
+		JSONArray jsonSimulations = null;
+
+		try {
+			jsonSimulations = new JSONArray(new JSONTokener(new BufferedReader(new FileReader(file))));
+		} catch (Exception e) {
+		}
+
+		if (jsonSimulations != null) {
+			_simTreeRoot.getChildren().clear();
+			_simulations.clear();
+
+			// TODO: For custom names:
+			// Ensure unique
+			for (int i = 0; i < jsonSimulations.length(); i++) {
+				MalModel mdl = MalModel.fromJSON(jsonSimulations.getJSONObject(i));
+
+				_simulations.put(mdl.name, mdl);
+
+				TreeItem<String> simLeaf = new TreeItem<>(mdl.name);
+				_simTreeRoot.getChildren().add(simLeaf);
+			}
+
+			if (_simulations.size() != 0) {
+				simulationTree.getSelectionModel().select(0);
+				// displayMALModel(_simulations.values().iterator().next());
+			}
+
 		} else {
-		    new Alert(Alert.AlertType.ERROR, String.format(
-				  "Simulation with name '%s' does not exist.", newV)).showAndWait();
+			new Alert(Alert.AlertType.ERROR, String.format("Couldn't parse file '%s'", file.getAbsolutePath()))
+					.showAndWait();
 		}
-	    });
-
-	Scene scene = new Scene(root, 1024, 769);
-	scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-
-	primaryStage.setScene(scene);
-	primaryStage.show();
-
-	stage = primaryStage;
-    }
-
-    /**
-     * Create the window menu bar
-     * 
-     * @return a javafx window menu object
-     */
-    private MenuBar createMenu() {
-	MenuBar menuBar = new MenuBar();
-
-	// File menu
-	Menu fileMenu = new Menu("File");
-	MenuItem fitem1 = new MenuItem("Open");
-
-	fitem1.setOnAction(e -> {
-		FileChooser fChooser = new FileChooser();
-		fChooser.setTitle("Open graph file");
-		fChooser.getExtensionFilters().addAll(new ExtensionFilter("JSON Files", "*.json"),
-						      new ExtensionFilter("All Files", "*.*"));
-
-		File selectedFile = fChooser.showOpenDialog(stage);
-
-		if (selectedFile != null)
-		    loadFile(selectedFile);
-	    });
-
-	fileMenu.getItems().add(fitem1);
-
-	// View menu
-	Menu viewMenu = new Menu("View");
-	MenuItem vzoomreset = new MenuItem("Zoom Reset");
-	MenuItem vitem1 = new MenuItem("Rearrange Cells");
-
-	vzoomreset.setOnAction(e -> graph.resetZoom());
-	vitem1.setOnAction(e -> graph.layoutCells());
-
-	viewMenu.getItems().addAll(vzoomreset, vitem1);
-	menuBar.getMenus().addAll(fileMenu, viewMenu);
-
-	return menuBar;
-    }
-
-    /**
-     * Construct MalModels from a JSON file containing MAl simulations.
-     * 
-     * @param file JSON file
-     */
-    private void loadFile(File file) {
-	JSONArray jsonSimulations = null;
-
-	try {
-	    jsonSimulations = new JSONArray(new JSONTokener(new BufferedReader(new FileReader(file))));
-	} catch (Exception e) {
 	}
 
-	if (jsonSimulations != null) {
-	    simulationList.getItems().clear();
-	    _simulations.clear();
+	/**
+	 * Display a MAL model in the graph view.
+	 * 
+	 * @param model MalModel to display
+	 */
+	private void displayMALModel(MalModel model) {
+		graph.clear();
 
-	    // TODO: For custom names:
-	    // Ensure unique
-	    for (int i = 0; i < jsonSimulations.length(); i++) {
-		MalModel mdl = MalModel.fromJSON(jsonSimulations.getJSONObject(i));
+		for (MalAsset asset : model.assets.values()) {
+			DataCell cell = new DataCell(asset);
 
-		_simulations.put(mdl.name, mdl);
-		simulationList.getItems().add(mdl.name);
-	    }
-
-	    if (_simulations.size() != 0) {
-		simulationList.getSelectionModel().select(0);
-		// displayMALModel(_simulations.values().iterator().next());
-	    }
-
-	} else {
-	    new Alert(Alert.AlertType.ERROR, String.format("Couldn't parse file '%s'", file.getAbsolutePath()))
-		.showAndWait();
-	}
-    }
-
-    /**
-     * Display a MAL model in the graph view.
-     * 
-     * @param model MalModel to display
-     */
-    private void displayMALModel(MalModel model) {
-	graph.clear();
-
-	for (MalAsset asset : model.assets.values()) {
-	    DataCell cell = new DataCell(asset);
-
-	    graph.addCell(asset.hash, cell);
-	}
-
-	// We need to apply the layout in order to get the correct
-	// layout values (width, height, etc) from javafx elements.
-	root.applyCss();
-	root.layout();
-
-	// Add edges between nodes
-	for (MalAsset asset : model.assets.values()) {
-	    for (int nodeId : asset.connections) {
-		if (asset.hash > nodeId) {
-		    graph.addEdge(asset.hash, nodeId);
+			graph.addCell(asset.hash, cell);
 		}
-	    }
-	}
-    }
 
-    public static void main(String[] args) {
-	launch(args);
-    }
+		// We need to apply the layout in order to get the correct
+		// layout values (width, height, etc) from javafx elements.
+		root.applyCss();
+		root.layout();
+
+		// Add edges between nodes
+		for (MalAsset asset : model.assets.values()) {
+			for (int nodeId : asset.connections) {
+				if (asset.hash > nodeId) {
+					graph.addEdge(asset.hash, nodeId);
+				}
+			}
+		}
+	}
+
+	public static void main(String[] args) {
+		launch(args);
+	}
 }

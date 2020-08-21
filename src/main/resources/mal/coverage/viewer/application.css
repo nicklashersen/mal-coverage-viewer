@@ -2,14 +2,14 @@
     -fx-background-color: #1F1F1FFF;
 }
 
-.list-view,
-.list-view .list-cell:odd,
-.list-view .list-cell:even {
+.tree-view,
+.tree-view .tree-cell:odd,
+.tree-view .tree-cell:even {
     -fx-background-color: #3A3A3AFF;
     -fx-text-fill: white;
 }
 
-.list-view .list-cell:selected {
+.tree-view .tree-cell:selected {
     -fx-background-color: #555555FF;
 }
 
