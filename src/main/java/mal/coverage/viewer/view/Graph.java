@@ -1,15 +1,14 @@
 package mal.coverage.viewer.view;
 
-import java.util.Map;
-
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javafx.scene.Group;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
-
 import mal.coverage.viewer.layout.Layout;
 import mal.coverage.viewer.layout.RandomLayout;
 
@@ -120,11 +119,20 @@ public class Graph {
         return cells.get(id);
     }
 
-    /**
-     * Get the underlying scroll pane.
-     * 
-     * @return scroll pane
-     */
+	/**
+	 * Returns a collection of all registered cells.
+	 *
+	 * @return a collection of all cells.
+	 */	
+	public Collection<Cell> getCells() {
+		return cells.values();
+	}
+	
+	/**
+	 * Get the underlying scroll pane.
+	 * 
+	 * @return scroll pane
+	 */
     public ScrollPane getScrollPane() {
         return scrollPane;
     }

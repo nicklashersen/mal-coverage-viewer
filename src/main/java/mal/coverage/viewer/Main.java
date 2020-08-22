@@ -27,6 +27,7 @@ import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.model.MalSimulation;
 import mal.coverage.viewer.model.util.JSONLoader;
 import mal.coverage.viewer.model.util.ModelLoader;
+import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
@@ -204,7 +205,9 @@ public class Main extends Application {
 		private boolean updateModel(String modelName, String oldMdlName) {
 			if (oldMdlName.equals(modelName)) {
 				// Same model
-				// TODO: reset coverage
+				for (Cell c : graph.getCells()) {
+					((DataCell) c).resetAllAttribColor();
+				}
 
 			} else {
 				// New model

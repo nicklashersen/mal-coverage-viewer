@@ -22,6 +22,8 @@ public class DataCell extends Cell {
 	public static final double FONT_CLASS_SIZE = 8;
 	public static final double NAME_PADDING = 5;
 	public static final Color BG_HEAD = Color.LIGHTGREY;
+
+	public Color defaultAttribColor = Color.BLACK;
 	public static final Color COLOR_COMPROMISED = Color.RED;
 	public static final Color COLOR_COMPROMISED_EFFORT = Color.YELLOW;
 	public static final Color COLOR_UNCOMPROMISED = Color.GREEN;
@@ -78,13 +80,6 @@ public class DataCell extends Cell {
 		for (MalAttackStep step : asset.steps.values()) {
 			Label lblStep = new Label(String.format("%s %s", step.type, step.name));
 
-			/*
-			 * if (step.ttc < COMPROMISED_WITH_EFFORT_LOW) {
-			 * lblStep.setTextFill(COLOR_COMPROMISED); } else if (step.ttc <
-			 * COMPROMISED_WITH_EFFORT_HIGH) {
-			 * lblStep.setTextFill(COLOR_COMPROMISED_EFFORT); } else {
-			 * lblStep.setTextFill(COLOR_UNCOMPROMISED); }
-			 */
 			attribs.put(step.name, lblStep);
 		}
 
@@ -103,5 +98,14 @@ public class DataCell extends Cell {
 
 			return label;
 		});
+	}
+
+	/**
+	 * Set all attrib entries to the default attrib color.
+	 */
+	public void resetAllAttribColor() {
+		for (Label lbl : attribs.values()) {
+			lbl.setTextFill(defaultAttribColor);
+		}
 	}
 }
