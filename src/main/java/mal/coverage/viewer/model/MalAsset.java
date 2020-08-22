@@ -1,10 +1,6 @@
 package mal.coverage.viewer.model;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class MalAsset {
     public final String name;

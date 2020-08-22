@@ -1,10 +1,6 @@
 package mal.coverage.viewer.model;
 
 import java.util.Set;
-import java.util.HashSet;
-
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 public class MalAttackStep {
     public final String name;

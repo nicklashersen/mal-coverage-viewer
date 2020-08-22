@@ -32,7 +32,7 @@ public class Main extends Application {
 	private Stage stage;
 	private Graph graph = new Graph();
 	private BorderPane root = new BorderPane();
-	private TreeView simulationTree = new TreeView();
+	private TreeView<String> simulationTree = new TreeView<>();
 	private TreeItem<String> _simTreeRoot = new TreeItem<>();
 	private Map<String, MalModel> _simulations = new HashMap<>();
 

@@ -1,8 +1,6 @@
 package mal.coverage.viewer.model;
 
 import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 
 public class MalModel {
 	// MalAsset id -> asset
