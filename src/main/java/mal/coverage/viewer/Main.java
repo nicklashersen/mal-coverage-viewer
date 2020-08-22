@@ -9,9 +9,6 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONTokener;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -36,7 +33,7 @@ public class Main extends Application {
 	private BorderPane root = new BorderPane();
 	private TreeView simulationTree = new TreeView();
 	private TreeItem<String> _simTreeRoot = new TreeItem<>();
-	private Map<String, MalModel> _simulations = new HashMap<>();
+	private Map<Object, Map<String, MalModel>> _simulations = new HashMap<>();
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -59,7 +56,6 @@ public class Main extends Application {
 					} else {
 						new Alert(Alert.AlertType.ERROR,
 								String.format("Simulation with name '%s' does not exist.", newV)).showAndWait();
-
 					}
 				});
 
@@ -118,15 +114,18 @@ public class Main extends Application {
 	 * @param file JSON file
 	 */
 	private void loadFile(File file) {
-		JSONArray jsonSimulations = null;
+		String extension = file.getName().substring(
+			file.getName().lastindexOf('.')).substring(0);
 
-		try {
-			jsonSimulations = new JSONArray(new JSONTokener(new BufferedReader(new FileReader(file))));
-		} catch (Exception e) {
+		_simTreeRoot.getChildren().clear();
+
+		switch (extension) {
+		case "json":
+			_simulations = new JSONLoader().parse(file);
+		default:
 		}
 
 		if (jsonSimulations != null) {
-			_simTreeRoot.getChildren().clear();
 			_simulations.clear();
 
 			// TODO: For custom names:
@@ -142,7 +141,6 @@ public class Main extends Application {
 
 			if (_simulations.size() != 0) {
 				simulationTree.getSelectionModel().select(0);
-				// displayMALModel(_simulations.values().iterator().next());
 			}
 
 		} else {
