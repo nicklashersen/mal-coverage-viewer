@@ -1,27 +1,18 @@
 package mal.coverage.viewer.model;
 
 import java.util.Map;
+import java.util.Set;
 
 public class MalSimulation {
 	public final String name;
 	public final String className;
-	public final Map<Integer, Data> compromisedAttackSteps;
-	public final Map<Integer, Integer> compromisedDefenses;
+	public final Map<Integer, Double> compromisedAttackSteps; // (id, ttc)
+	public final Set<Integer> compromisedDefenses; // id
 
-	public MalSimulation(String name, String className, Map<Integer, Data> steps, Map<Integer, Integer> defenses) {
+	public MalSimulation(String name, String className, Map<Integer, Double> steps, Set<Integer> defenses) {
 		this.name = name;
 		this.className = className;
 		compromisedAttackSteps = steps;
 		compromisedDefenses = defenses;
-	}
-
-	public static class Data {
-		public final int id;
-		public final double ttc;
-
-		public Data(int id, double ttc) {
-			this.id = id;
-			this.ttc = ttc;
-		}
 	}
 }

@@ -3,11 +3,12 @@ package mal.coverage.viewer.model;
 import java.util.Set;
 
 public class MalAttackStep {
-    public final String name;
-    public final String type;
-    public final int hash;
+	public final String name;
+	public final String type;
+	public final int hash;
+	public final int assetHash;
 
-    public final Set<Integer> parents;
+	public final Set<Integer> parents;
 
 	/*
 	 * Same valus as used in assertCompromisedWithEffort (MAL:AttackStep.java)
@@ -15,14 +16,12 @@ public class MalAttackStep {
 	public static final double COMPROMISED_WITH_EFFORT_LOW = 1.0 / 1444;
 	public static final double COMPROMISED_WITH_EFFORT_HIGH = 1000.0;
 
-    public MalAttackStep(String name,
-			 String type,
-			 int hash,
-			 Set<Integer> parents) {
+	public MalAttackStep(String name, String type, int assetHash, int hash, Set<Integer> parents) {
 
-	this.name = name;
-	this.type = type;
-	this.hash = hash;
-	this.parents = parents;
-    }
+		this.name = name;
+		this.type = type;
+		this.hash = hash;
+		this.assetHash = assetHash;
+		this.parents = parents;
+	}
 }

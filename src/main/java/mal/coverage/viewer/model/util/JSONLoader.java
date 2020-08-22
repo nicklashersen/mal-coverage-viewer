@@ -31,11 +31,11 @@ public class JSONLoader implements ModelLoader {
 	 * @param json object describing a mal defense
 	 * @return MalDefense constructed from the json description.
 	 */
-	public MalDefense parse_defense(JSONObject json) {
+	public MalDefense parse_defense(JSONObject json, int assetHash) {
 		String name = json.getString("name");
 		int hash = json.getInt("hash");
 
-		MalDefense def = new MalDefense(name, hash);
+		MalDefense def = new MalDefense(name, assetHash, hash);
 		_defense.put(hash, def);
 
 		return def;
@@ -47,7 +47,7 @@ public class JSONLoader implements ModelLoader {
 	 * @param json object describing a mal attack step.
 	 * @return MalAttackStep constructed from the json description.
 	 */
-	public MalAttackStep parse_attack_step(JSONObject json) {
+	public MalAttackStep parse_attack_step(JSONObject json, int assetHash) {
 		String step = json.getString("step");
 		String type = json.getString("type");
 		int hash = json.getInt("hash");
@@ -61,7 +61,7 @@ public class JSONLoader implements ModelLoader {
 		}
 
 		// Store step
-		MalAttackStep mStep = new MalAttackStep(step, type, hash, parents);
+		MalAttackStep mStep = new MalAttackStep(step, type, assetHash, hash, parents);
 		_steps.put(hash, mStep);
 
 		return mStep;
@@ -92,7 +92,7 @@ public class JSONLoader implements ModelLoader {
 
 		for (int i = 0; i < jsonAtkSteps.length(); i++) {
 			JSONObject jsonAtkStep = jsonAtkSteps.getJSONObject(i);
-			MalAttackStep atkStep = parse_attack_step(jsonAtkStep);
+			MalAttackStep atkStep = parse_attack_step(jsonAtkStep, hash);
 
 			atkSteps.put(atkStep.hash, atkStep);
 		}
@@ -103,7 +103,7 @@ public class JSONLoader implements ModelLoader {
 
 		for (int i = 0; i < jsonDefenses.length(); i++) {
 			JSONObject jsonDefense = jsonDefenses.getJSONObject(i);
-			MalDefense defense = parse_defense(jsonDefense);
+			MalDefense defense = parse_defense(jsonDefense, hash);
 
 			defenses.put(defense.name, defense);
 		}
@@ -123,22 +123,22 @@ public class JSONLoader implements ModelLoader {
 	
 		// Parse compromised attack steps 
 		JSONArray jSteps = json.getJSONArray("compromised");
-		Map<Integer, MalSimulation.Data> steps = new HashMap<>(jSteps.length());
+		Map<Integer, Double> steps = new HashMap<>(jSteps.length());
 	
 		for (int i = 0; i < jSteps.length(); i++) {
 			JSONObject jStep = jSteps.getJSONObject(i);
 			int val = jStep.getInt("id");
 			double ttc = jStep.getDouble("ttc");
-			steps.put(val, new MalSimulation.Data(val, ttc));
+			steps.put(val, ttc);
 		}
 	
 		// Parse active defenses
 		JSONArray jDef = json.getJSONArray("activeDefenses");
-		Map<Integer, Integer> defenses = new HashMap<>(jDef.length());
+		Set<Integer> defenses = new HashSet<>(jDef.length());
 	
 		for (int i = 0; i < jDef.length(); i++) {
 			Integer val = jDef.getInt(i);
-			defenses.put(val, val);
+			defenses.add(val);
 		}
 	
 		return new MalSimulation(name, className, steps, defenses);
@@ -169,7 +169,7 @@ public class JSONLoader implements ModelLoader {
 			JSONObject jSim = jSims.getJSONObject(i);
 			MalSimulation sim = parse_simulation(jSim);
 
-			sims.put(sim.name, sim);
+			sims.put(String.format("%s.%s", sim.className, sim.name), sim);
 		}
 
 		return new MalModel(assets, _steps, _defense, sims);

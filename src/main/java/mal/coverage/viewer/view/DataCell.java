@@ -24,9 +24,6 @@ public class DataCell extends Cell {
 	public static final Color BG_HEAD = Color.LIGHTGREY;
 
 	public Color defaultAttribColor = Color.BLACK;
-	public static final Color COLOR_COMPROMISED = Color.RED;
-	public static final Color COLOR_COMPROMISED_EFFORT = Color.YELLOW;
-	public static final Color COLOR_UNCOMPROMISED = Color.GREEN;
 
 	private Label className = new Label();
 	private Label name = new Label();

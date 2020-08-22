@@ -19,19 +19,27 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import mal.coverage.viewer.model.MalAsset;
+import mal.coverage.viewer.model.MalAttackStep;
+import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.model.MalSimulation;
 import mal.coverage.viewer.model.util.JSONLoader;
 import mal.coverage.viewer.model.util.ModelLoader;
+import mal.coverage.viewer.model.util.SimulationMerger;
 import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
 public class Main extends Application {
+	public static final Color COLOR_COMPROMISED = Color.RED;
+	public static final Color COLOR_COMPROMISED_EFFORT = Color.ORANGE;
+	public static final Color COLOR_COMPROMISED_MUCH_EFFORT = Color.YELLOW;
+
 	private Stage stage;
 	private Graph graph = new Graph();
 	private BorderPane root = new BorderPane();
@@ -50,8 +58,7 @@ public class Main extends Application {
 		simulationTree.setPrefWidth(200);
 		simulationTree.setRoot(_simTreeRoot);
 		simulationTree.setShowRoot(false);
-		simulationTree.getSelectionModel().selectedItemProperty()
-				.addListener(selectionChangedListener);
+		simulationTree.getSelectionModel().selectedItemProperty().addListener(selectionChangedListener);
 
 		Scene scene = new Scene(root, 1024, 769);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
@@ -136,26 +143,24 @@ public class Main extends Application {
 	}
 
 	/**
-	 * Returns a model loader base on the file extension. Defaults 
-	 * to the json loader.	
+	 * Returns a model loader base on the file extension. Defaults to the json
+	 * loader.
 	 *
 	 * @param file containing model.
-	 * @return loader for specified filetype (if supported);	
-	 */	
-	private ModelLoader getLoader(File file) { 
-		String extension = file.getName().substring(
-			file.getName().lastIndexOf('.')).substring(0);
-	
-			switch (extension) {
+	 * @return loader for specified filetype (if supported);
+	 */
+	private ModelLoader getLoader(File file) {
+		String extension = file.getName().substring(file.getName().lastIndexOf('.')).substring(0);
+
+		switch (extension) {
 			case "json":
 			default:
 				return new JSONLoader();
-			}
+		}
 	}
-	
+
 	/**
-	 * Display a MAL model in the graph view. Does not clear
-	 * the graph.	
+	 * Display a MAL model in the graph view. Does not clear the graph.
 	 * 
 	 * @param model MalModel to display
 	 */
@@ -198,10 +203,10 @@ public class Main extends Application {
 			}
 		}
 
-	/**
-	 * Prepare the model display in the graph view. Return
-	 * true if successful, false otherwise.
-	 */
+		/**
+		 * Prepare the model display in the graph view. Return true if successful, false
+		 * otherwise.
+		 */
 		private boolean updateModel(String modelName, String oldMdlName) {
 			if (oldMdlName.equals(modelName)) {
 				// Same model
@@ -226,6 +231,29 @@ public class Main extends Application {
 			return true;
 		}
 
+		private Map<Integer, Double> getCompromised(TreeItem<String> item) {
+			Map<Integer, Double> simulationResults;
+
+			if (item.getParent().equals(_simTreeRoot)) {
+				// Load model
+				MalModel mdl = _simulations.get(getModelName(item));
+				simulationResults = SimulationMerger.mergeModel(mdl);
+
+			} else if (item.getChildren().isEmpty()) {
+				// Load simulation
+				MalModel mdl = _simulations.get(getModelName(item));
+				String key = String.format("%s.%s", item.getParent().getValue(), item.getValue());
+				simulationResults = mdl.simulations.get(key).compromisedAttackSteps;
+
+			} else {
+				// Load test class
+				MalModel mdl = _simulations.get(getModelName(item));
+				simulationResults = SimulationMerger.mergeModelByClassname(mdl, item.getValue());
+			}
+
+			return simulationResults;
+		}
+
 		@Override
 		public void changed(ObservableValue<? extends TreeItem<String>> obs, TreeItem<String> old,
 				TreeItem<String> selected) {
@@ -237,6 +265,41 @@ public class Main extends Application {
 			String modelName = getModelName(selected);
 
 			if (updateModel(modelName, oldMdlName)) {
+				Map<Integer, Double> simRes = getCompromised(selected);
+				MalModel mdl = _simulations.get(modelName);
+
+				simRes.forEach((id, ttc) -> {
+					MalAttackStep step = mdl.attackSteps.get(id);
+					int assetHash;
+					String attribName;
+
+					if (step == null) {
+						MalDefense def = mdl.defense.get(id);
+
+						if (def == null) {
+							System.err.println("WARNING: Found invalid compromised attack step reference. IGNORING");
+							System.err.println(String.format("    ID: %d -> null", id));
+							return;
+						}
+						attribName = def.name;
+						assetHash = def.assetHash;
+
+					} else {
+						attribName = step.name;
+						assetHash = step.assetHash;
+
+					}
+
+					DataCell cell = (DataCell) graph.getCell(assetHash);
+
+					if (ttc < MalAttackStep.COMPROMISED_WITH_EFFORT_LOW) {
+						cell.setAttribColor(attribName, COLOR_COMPROMISED);
+					} else if (ttc < MalAttackStep.COMPROMISED_WITH_EFFORT_HIGH) {
+						cell.setAttribColor(attribName, COLOR_COMPROMISED_EFFORT);
+					} else {
+						cell.setAttribColor(attribName, COLOR_COMPROMISED_MUCH_EFFORT);
+					}
+				});
 			}
 
 		}
