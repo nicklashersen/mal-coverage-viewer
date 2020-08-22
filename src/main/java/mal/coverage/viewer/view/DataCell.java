@@ -84,6 +84,7 @@ public class DataCell extends Cell {
         for (MalAttackStep step : asset.steps.values()) {
             Label lblStep = new Label(String.format("%s %s", step.type, step.name));
 
+	    /*
 	    if (step.ttc < COMPROMISED_WITH_EFFORT_LOW) {
 		lblStep.setTextFill(COLOR_COMPROMISED);
 	    } else if (step.ttc < COMPROMISED_WITH_EFFORT_HIGH) {
@@ -91,6 +92,7 @@ public class DataCell extends Cell {
 	    } else {
 		lblStep.setTextFill(COLOR_UNCOMPROMISED);
 	    }
+	    */
 	    attribs.put(step.name, lblStep);
 	}
 

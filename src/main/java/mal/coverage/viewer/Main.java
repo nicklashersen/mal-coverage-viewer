@@ -3,16 +3,14 @@
  */
 package mal.coverage.viewer;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -24,6 +22,9 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import mal.coverage.viewer.model.MalAsset;
 import mal.coverage.viewer.model.MalModel;
+import mal.coverage.viewer.model.MalSimulation;
+import mal.coverage.viewer.model.util.JSONLoader;
+import mal.coverage.viewer.model.util.ModelLoader;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
@@ -33,7 +34,7 @@ public class Main extends Application {
 	private BorderPane root = new BorderPane();
 	private TreeView simulationTree = new TreeView();
 	private TreeItem<String> _simTreeRoot = new TreeItem<>();
-	private Map<Object, Map<String, MalModel>> _simulations = new HashMap<>();
+	private Map<String, MalModel> _simulations = new HashMap<>();
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -49,6 +50,9 @@ public class Main extends Application {
 
 		simulationTree.getSelectionModel().selectedItemProperty()
 				.addListener((obs, old, newV) -> {
+					if (newV == null)
+						return;
+
 					TreeItem<String> selected = (TreeItem<String>) newV;
 						
 					if (_simulations.containsKey(selected.getValue())) {
@@ -114,41 +118,50 @@ public class Main extends Application {
 	 * @param file JSON file
 	 */
 	private void loadFile(File file) {
-		String extension = file.getName().substring(
-			file.getName().lastindexOf('.')).substring(0);
-
 		_simTreeRoot.getChildren().clear();
+		_simulations.clear();
 
-		switch (extension) {
-		case "json":
-			_simulations = new JSONLoader().parse(file);
-		default:
+		List<MalModel> models = getLoader(file).parse(file);
+
+		int nMdls = 1;
+		for (MalModel m : models) {
+			String mdlName = "Model " + nMdls;
+			nMdls++;
+
+			_simulations.put(mdlName, m);
+			TreeItem<String> mdlLeaf = new TreeItem<>(mdlName);
+			_simTreeRoot.getChildren().add(mdlLeaf);
+
+			for (MalSimulation sim : m.simulations.values()) {
+				TreeItem<String> simLeaf = new TreeItem<>(sim.name);
+
+				mdlLeaf.getChildren().add(simLeaf);
+			}
 		}
 
-		if (jsonSimulations != null) {
-			_simulations.clear();
-
-			// TODO: For custom names:
-			// Ensure unique
-			for (int i = 0; i < jsonSimulations.length(); i++) {
-				MalModel mdl = MalModel.fromJSON(jsonSimulations.getJSONObject(i));
-
-				_simulations.put(mdl.name, mdl);
-
-				TreeItem<String> simLeaf = new TreeItem<>(mdl.name);
-				_simTreeRoot.getChildren().add(simLeaf);
-			}
-
-			if (_simulations.size() != 0) {
-				simulationTree.getSelectionModel().select(0);
-			}
-
-		} else {
-			new Alert(Alert.AlertType.ERROR, String.format("Couldn't parse file '%s'", file.getAbsolutePath()))
-					.showAndWait();
+		if (_simulations.size() != 0) {
+			// simulationTree.getSelectionModel().select(0);
 		}
 	}
 
+	/**
+	 * Returns a model loader base on the file extension. Defaults 
+	 * to the json loader.	
+	 *
+	 * @param file containing model.
+	 * @return loader for specified filetype (if supported);	
+	 */	
+	private ModelLoader getLoader(File file) { 
+		String extension = file.getName().substring(
+			file.getName().lastIndexOf('.')).substring(0);
+	
+			switch (extension) {
+			case "json":
+			default:
+				return new JSONLoader();
+			}
+	}
+	
 	/**
 	 * Display a MAL model in the graph view.
 	 * 

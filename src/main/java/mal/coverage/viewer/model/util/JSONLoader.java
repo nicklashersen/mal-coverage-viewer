@@ -202,7 +202,7 @@ public class JSONLoader implements ModelLoader {
 	 */
 	@Override
 	public List<MalModel> parse(File file) {
-		List<MalModel> res; 
+		List<MalModel> res = new ArrayList<>();
 
 		try {
 			JSONArray json = new JSONArray(new JSONTokener(new BufferedReader(new FileReader(file))));
@@ -211,9 +211,7 @@ public class JSONLoader implements ModelLoader {
 
 		} catch (Exception e) {
 			new Alert(Alert.AlertType.ERROR, String.format("Failed to parse file '%s'.", file.getName()));
-			res = new List<>();
-		} finally {
-			return res;
 		}
+		return res;
 	}
 }
