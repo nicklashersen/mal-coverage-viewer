@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Menu;
@@ -47,21 +49,8 @@ public class Main extends Application {
 		simulationTree.setPrefWidth(200);
 		simulationTree.setRoot(_simTreeRoot);
 		simulationTree.setShowRoot(false);
-
 		simulationTree.getSelectionModel().selectedItemProperty()
-				.addListener((obs, old, newV) -> {
-					if (newV == null)
-						return;
-
-					TreeItem<String> selected = (TreeItem<String>) newV;
-						
-					if (_simulations.containsKey(selected.getValue())) {
-						displayMALModel(_simulations.get(selected.getValue()));
-					} else {
-						new Alert(Alert.AlertType.ERROR,
-								String.format("Simulation with name '%s' does not exist.", newV)).showAndWait();
-					}
-				});
+				.addListener(selectionChangedListener);
 
 		Scene scene = new Scene(root, 1024, 769);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
@@ -120,6 +109,7 @@ public class Main extends Application {
 	private void loadFile(File file) {
 		_simTreeRoot.getChildren().clear();
 		_simulations.clear();
+		graph.clear();
 
 		List<MalModel> models = getLoader(file).parse(file);
 
@@ -132,15 +122,15 @@ public class Main extends Application {
 			TreeItem<String> mdlLeaf = new TreeItem<>(mdlName);
 			_simTreeRoot.getChildren().add(mdlLeaf);
 
+			Map<String, TreeItem<String>> testClasses = new HashMap<>();
 			for (MalSimulation sim : m.simulations.values()) {
 				TreeItem<String> simLeaf = new TreeItem<>(sim.name);
 
-				mdlLeaf.getChildren().add(simLeaf);
+				TreeItem<String> testClass = testClasses.computeIfAbsent(sim.className, s -> new TreeItem<>(s));
+				testClass.getChildren().add(simLeaf);
 			}
-		}
 
-		if (_simulations.size() != 0) {
-			// simulationTree.getSelectionModel().select(0);
+			mdlLeaf.getChildren().addAll(testClasses.values());
 		}
 	}
 
@@ -163,13 +153,12 @@ public class Main extends Application {
 	}
 	
 	/**
-	 * Display a MAL model in the graph view.
+	 * Display a MAL model in the graph view. Does not clear
+	 * the graph.	
 	 * 
 	 * @param model MalModel to display
 	 */
 	private void displayMALModel(MalModel model) {
-		graph.clear();
-
 		for (MalAsset asset : model.assets.values()) {
 			DataCell cell = new DataCell(asset);
 
@@ -190,6 +179,65 @@ public class Main extends Application {
 			}
 		}
 	}
+
+	private ChangeListener<TreeItem<String>> selectionChangedListener = new ChangeListener<>() {
+		private String getModelName(TreeItem<String> item) {
+			if (item == null)
+				return "";
+
+			if (item.getParent().equals(_simTreeRoot)) {
+				// Model node
+				return item.getValue();
+			} else if (item.getChildren().isEmpty()) {
+				// Test method node
+				return item.getParent().getParent().getValue();
+			} else {
+				// Test class node
+				return item.getParent().getValue();
+			}
+		}
+
+	/**
+	 * Prepare the model display in the graph view. Return
+	 * true if successful, false otherwise.
+	 */
+		private boolean updateModel(String modelName, String oldMdlName) {
+			if (oldMdlName.equals(modelName)) {
+				// Same model
+				// TODO: reset coverage
+
+			} else {
+				// New model
+				if (_simulations.containsKey(modelName)) {
+					graph.clear();
+					displayMALModel(_simulations.get(modelName));
+
+				} else {
+					new Alert(Alert.AlertType.ERROR, String.format("Model with name '%s' does not exist.", modelName))
+							.showAndWait();
+
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		@Override
+		public void changed(ObservableValue<? extends TreeItem<String>> obs, TreeItem<String> old,
+				TreeItem<String> selected) {
+			// Selection cleared
+			if (selected == null)
+				return;
+
+			String oldMdlName = getModelName(old);
+			String modelName = getModelName(selected);
+
+			if (updateModel(modelName, oldMdlName)) {
+			}
+
+		}
+	};
 
 	public static void main(String[] args) {
 		launch(args);

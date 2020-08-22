@@ -9,6 +9,12 @@ public class MalAttackStep {
 
     public final Set<Integer> parents;
 
+	/*
+	 * Same valus as used in assertCompromisedWithEffort (MAL:AttackStep.java)
+	 */
+	public static final double COMPROMISED_WITH_EFFORT_LOW = 1.0 / 1444;
+	public static final double COMPROMISED_WITH_EFFORT_HIGH = 1000.0;
+
     public MalAttackStep(String name,
 			 String type,
 			 int hash,

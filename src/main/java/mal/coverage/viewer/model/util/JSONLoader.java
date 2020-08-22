@@ -119,6 +119,7 @@ public class JSONLoader implements ModelLoader {
 	 */	
 	private MalSimulation parse_simulation(JSONObject json) {
 		String name = json.getString("test");
+		String className = json.getString("class");
 	
 		// Parse compromised attack steps 
 		JSONArray jSteps = json.getJSONArray("compromised");
@@ -140,7 +141,7 @@ public class JSONLoader implements ModelLoader {
 			defenses.put(val, val);
 		}
 	
-		return new MalSimulation(name, steps, defenses);
+		return new MalSimulation(name, className, steps, defenses);
 	}
 	
 	/**
