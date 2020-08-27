@@ -28,6 +28,7 @@ import mal.coverage.viewer.model.MalAttackStep;
 import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.model.MalSimulation;
+import mal.coverage.viewer.model.coverage.CoverageData;
 import mal.coverage.viewer.model.util.JSONLoader;
 import mal.coverage.viewer.model.util.ModelLoader;
 import mal.coverage.viewer.model.util.SimulationMerger;
@@ -268,13 +269,20 @@ public class Main extends Application {
 				Map<Integer, Double> simRes = getCompromised(selected);
 				MalModel mdl = _simulations.get(modelName);
 
+				mal.coverage.viewer.model.coverage.CoverageData data = new CoverageData(mdl, simRes);
+				data.forEach(d -> {
+					CoverageData.Entry entry = (CoverageData.Entry) d;
+					System.out.println(String.format("%20s [%d/%d] %f", entry.name, entry.nCompromised, entry.nMax, (double) entry.nCompromised / entry.nMax));
+					});
+				// TODO: display coverage data
+
 				simRes.forEach((id, ttc) -> {
 					MalAttackStep step = mdl.attackSteps.get(id);
 					int assetHash;
 					String attribName;
 
 					if (step == null) {
-						MalDefense def = mdl.defense.get(id);
+						MalDefense def = mdl.defenses.get(id);
 
 						if (def == null) {
 							System.err.println("WARNING: Found invalid compromised attack step reference. IGNORING");

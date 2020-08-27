@@ -24,7 +24,7 @@ import mal.coverage.viewer.model.MalSimulation;
 public class JSONLoader implements ModelLoader {
 	private Map<Integer, MalAttackStep> _steps;
 	private Map<Integer, MalDefense> _defense;
-	
+
 	/**
 	 * Constructs a MalDefense from a json object descrirption.
 	 *
@@ -35,7 +35,15 @@ public class JSONLoader implements ModelLoader {
 		String name = json.getString("name");
 		int hash = json.getInt("hash");
 
-		MalDefense def = new MalDefense(name, assetHash, hash);
+		JSONArray jParents = json.getJSONArray("parents");
+		Set<Integer> parents = new HashSet<>(jParents.length());
+
+		for (int i = 0; i < jParents.length(); i++) {
+			int id = jParents.getInt(i);
+			parents.add(id);
+		}
+
+		MalDefense def = new MalDefense(name, assetHash, hash, parents);
 		_defense.put(hash, def);
 
 		return def;
@@ -151,9 +159,13 @@ public class JSONLoader implements ModelLoader {
 	 * @return a MAL model.
 	 */
 	private MalModel parse_model(JSONObject json) {		// Parse mal threat model
+		_steps = new HashMap<>();
+		_defense = new HashMap<>();
+
 		JSONArray jsonAssets = json.getJSONArray("model");
 		Map<Integer, MalAsset> assets = new HashMap<>(jsonAssets.length());
 
+		// Load assets
 		for (int i = 0; i < jsonAssets.length(); i++) {
 			JSONObject jAsset = jsonAssets.getJSONObject(i);
 			MalAsset asset = parse_asset(jAsset);
@@ -182,8 +194,6 @@ public class JSONLoader implements ModelLoader {
 	 * @return list of mal models and simulations
 	 */
 	private List<MalModel> parse_json(JSONArray json) {
-		_steps = new HashMap<>();
-		_defense = new HashMap<>();
 		List<MalModel> res = new ArrayList<>(json.length());
 
 		for (int i = 0; i < json.length(); i++) {

@@ -1,8 +1,11 @@
+.scroll-pane,
+.scroll-pane:focused,
 .scroll-pane > .viewport {
     -fx-background-color: #1F1F1FFF;
 }
 
 .tree-view,
+.tree-view:focused,
 .tree-view .tree-cell:odd,
 .tree-view .tree-cell:even {
     -fx-background-color: #3A3A3AFF;

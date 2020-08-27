@@ -3,6 +3,8 @@ package mal.coverage.viewer.model;
 import java.util.Map;
 import java.util.Set;
 
+import mal.coverage.viewer.model.coverage.CoverageData;
+
 public class MalSimulation {
 	public final String name;
 	public final String className;
@@ -14,5 +16,13 @@ public class MalSimulation {
 		this.className = className;
 		compromisedAttackSteps = steps;
 		activeDefenses = defenses;
+	}
+
+	public boolean compromised(MalAttackStep step) {
+		return compromised(step.hash);
+	}
+
+	public boolean compromised(int hash) {
+		return compromisedAttackSteps.containsKey(hash);
 	}
 }
