@@ -118,13 +118,8 @@ public class ModelSelectionChangedListener {
 				Map<Integer, Double> simRes = getCompromised(selected);
 				MalModel mdl = _application.simulations.get(modelName);
 
-				mal.coverage.viewer.model.coverage.CoverageData data = new CoverageData(mdl, simRes);
-				data.forEach(d -> {
-					CoverageData.Entry entry = (CoverageData.Entry) d;
-					System.out.println(String.format("%20s [%d/%d] %f", entry.name, entry.nCompromised, entry.nMax,
-							(double) entry.nCompromised / entry.nMax));
-				});
-				// TODO: display coverage data
+				CoverageData data = new CoverageData(mdl, simRes, selected.getValue());
+				_application.currentCoverage = data;
 
 				simRes.forEach((id, ttc) -> {
 					MalAttackStep step = mdl.attackSteps.get(id);

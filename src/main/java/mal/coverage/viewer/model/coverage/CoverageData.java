@@ -13,14 +13,16 @@ import mal.coverage.viewer.model.MalModel;
 /**
  * CoverageData
  */
-public class CoverageData implements Iterable {
+public class CoverageData implements Iterable<CoverageData.Entry> {
 	private Map<String, Entry> coverageResults = new HashMap<>();
+	public String selectionName;
 
 	public CoverageData() {
 	}
 
-	public CoverageData(MalModel mdl, Map<Integer, Double> compromised) {
+	public CoverageData(MalModel mdl, Map<Integer, Double> compromised, String selectionName) {
 		computeCoverage(mdl, compromised);
+		this.selectionName = selectionName;
 	}
 
 	/**

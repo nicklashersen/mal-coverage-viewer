@@ -9,30 +9,22 @@ import java.util.List;
 import java.util.Map;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import mal.coverage.viewer.model.MalAsset;
-import mal.coverage.viewer.model.MalAttackStep;
-import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.model.MalSimulation;
 import mal.coverage.viewer.model.coverage.CoverageData;
 import mal.coverage.viewer.model.util.JSONLoader;
 import mal.coverage.viewer.model.util.ModelLoader;
-import mal.coverage.viewer.model.util.SimulationMerger;
-import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
@@ -43,9 +35,11 @@ public class Main extends Application {
 	private TreeItem<String> _simTreeRoot = new TreeItem<>();
 
 	private ModelSelectionChangedListener _mdlSelectionChangedListener = new ModelSelectionChangedListener(this);
+	private AttackStepHoverListener _stepHoverListener = new AttackStepHoverListener();
 
 	public Graph graph = new Graph();
 	public Map<String, MalModel> simulations = new HashMap<>();
+	public CoverageData currentCoverage;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -99,11 +93,13 @@ public class Main extends Application {
 		Menu viewMenu = new Menu("View");
 		MenuItem vzoomreset = new MenuItem("Zoom Reset");
 		MenuItem vitem1 = new MenuItem("Rearrange Cells");
+		MenuItem vCoverage = new MenuItem("Coverage Info");
 
 		vzoomreset.setOnAction(e -> graph.resetZoom());
 		vitem1.setOnAction(e -> graph.layoutCells());
+		vCoverage.setOnAction(e -> new CoverageWindow(currentCoverage));
 
-		viewMenu.getItems().addAll(vzoomreset, vitem1);
+		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage);
 		menuBar.getMenus().addAll(fileMenu, viewMenu);
 
 		return menuBar;
@@ -167,6 +163,7 @@ public class Main extends Application {
 	public void displayMALModel(MalModel model) {
 		for (MalAsset asset : model.assets.values()) {
 			DataCell cell = new DataCell(asset);
+			_stepHoverListener.registerDataCell(cell);
 
 			graph.addCell(asset.hash, cell);
 		}
