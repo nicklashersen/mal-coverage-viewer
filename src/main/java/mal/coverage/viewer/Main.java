@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -96,12 +97,13 @@ public class Main extends Application {
 		MenuItem vzoomreset = new MenuItem("Zoom Reset");
 		MenuItem vitem1 = new MenuItem("Rearrange Cells");
 		MenuItem vCoverage = new MenuItem("Coverage Info");
+		CheckMenuItem vShowParents = new CheckMenuItem("Show Parents");
 
 		vzoomreset.setOnAction(e -> graph.resetZoom());
 		vitem1.setOnAction(e -> graph.layoutCells());
 		vCoverage.setOnAction(e -> new CoverageWindow(currentCoverage));
 
-		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage);
+		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage, vShowParents);
 		menuBar.getMenus().addAll(fileMenu, viewMenu);
 
 		return menuBar;
@@ -173,6 +175,7 @@ public class Main extends Application {
 		}
 
 		_stepHoverListener.labelStepMap = cellConstructor.labelToStep;
+		_stepHoverListener.stepIdToLabel = cellConstructor.stepIdToLabel;
 
 		// We need to apply the layout in order to get the correct
 		// layout values (width, height, etc) from javafx elements.

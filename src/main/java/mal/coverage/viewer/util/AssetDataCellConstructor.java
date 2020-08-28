@@ -11,6 +11,7 @@ import mal.coverage.viewer.view.DataCell;
 
 public class AssetDataCellConstructor {
 	public Map<Label, MalAttackStep> labelToStep = new HashMap<>();
+	public Map<Integer, Label> stepIdToLabel = new HashMap<>();
 
 	public DataCell cellFromAsset(MalAsset asset) {
 		DataCell cell = new DataCell(asset.name, asset.assetName);
@@ -31,6 +32,7 @@ public class AssetDataCellConstructor {
 			Label l = cell.addAttribute(String.format("%s %s", step.type, step.name));
 
 			labelToStep.put(l, step);
+			stepIdToLabel.put(step.hash, l);
 		}
 	}
 }

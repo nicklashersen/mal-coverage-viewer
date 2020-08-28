@@ -28,3 +28,8 @@
 .edge-visited {
     -fx-stroke: green;
 }
+
+.parent-edge {
+	-fx-stroke: blue;
+	-fx-stroke-width: 1px;
+}
