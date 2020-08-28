@@ -45,6 +45,9 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
+		_stepHoverListener = new AttackStepHoverListener(graph);
+		Scene scene = new Scene(root, 1024, 769);
+
 		MenuBar menuBar = createMenu();
 
 		root.setCenter(graph.getScrollPane());
@@ -55,9 +58,7 @@ public class Main extends Application {
 		simulationTree.setRoot(_simTreeRoot);
 		simulationTree.setShowRoot(false);
 		_mdlSelectionChangedListener.registerTreeView(simulationTree);
-		_stepHoverListener = new AttackStepHoverListener(graph);
 
-		Scene scene = new Scene(root, 1024, 769);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
 		primaryStage.setScene(scene);
@@ -102,6 +103,10 @@ public class Main extends Application {
 		vzoomreset.setOnAction(e -> graph.resetZoom());
 		vitem1.setOnAction(e -> graph.layoutCells());
 		vCoverage.setOnAction(e -> new CoverageWindow(currentCoverage));
+		vShowParents.selectedProperty().addListener((obs, old, newV) -> {
+				_stepHoverListener.showParents = newV;
+			});
+		_stepHoverListener.showParents = vShowParents.isSelected();
 
 		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage, vShowParents);
 		menuBar.getMenus().addAll(fileMenu, viewMenu);

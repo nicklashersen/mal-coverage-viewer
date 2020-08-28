@@ -2,13 +2,8 @@ package mal.coverage.viewer.model;
 
 import java.util.Set;
 
-public class MalAttackStep {
-	public final String name;
+public class MalAttackStep extends MalAbstractStep {
 	public final String type;
-	public final int hash;
-	public final int assetHash;
-
-	public final Set<Integer> parents;
 
 	/*
 	 * Same valus as used in assertCompromisedWithEffort (MAL:AttackStep.java)
@@ -18,10 +13,7 @@ public class MalAttackStep {
 
 	public MalAttackStep(String name, String type, int assetHash, int hash, Set<Integer> parents) {
 
-		this.name = name;
+		super(name, assetHash, hash, parents);
 		this.type = type;
-		this.hash = hash;
-		this.assetHash = assetHash;
-		this.parents = parents;
 	}
 }

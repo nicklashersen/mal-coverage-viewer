@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 import mal.coverage.viewer.model.MalAsset;
 import mal.coverage.viewer.model.MalAttackStep;
 import mal.coverage.viewer.model.MalDefense;
-import mal.coverage.viewer.model.MalAbstractStep;
+import mal.coverage.viewer.model.blMalAbstractStep;
 import mal.coverage.viewer.view.DataCell;
 
 public class AssetDataCellConstructor {

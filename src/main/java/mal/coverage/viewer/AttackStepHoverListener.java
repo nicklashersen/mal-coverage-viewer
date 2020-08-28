@@ -10,6 +10,7 @@ import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Line;
 import mal.coverage.viewer.model.MalAttackStep;
+import mal.coverage.viewer.model.MalAbstractStep;
 import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
@@ -17,8 +18,10 @@ import mal.coverage.viewer.view.Graph;
 public class AttackStepHoverListener {
 	public Graph graph;
 	public Group drawGroup = new Group();
-	public Map<Label, MalAttackStep> labelStepMap;
+	public Map<Label, MalAbstractStep> labelStepMap;
 	public Map<Integer, Label> stepIdToLabel;
+
+	public boolean showParents;
 
 	public AttackStepHoverListener(Graph g) {
 		this.graph = g;
@@ -51,6 +54,33 @@ public class AttackStepHoverListener {
 	}
 
 	private ChangeListener<Boolean> _listener = new ChangeListener<>() {
+
+		private void showParentSteps(MalAbstractStep step, Label lbl) {
+			Bounds lblSceneBounds = getDrawBounds(lbl);
+
+			for (int id : step.parents) {
+				Label other = stepIdToLabel.get(id);
+				Bounds otherSceneBounds = getDrawBounds(other);
+
+				drawLine(lblSceneBounds, otherSceneBounds);
+			}
+		}
+
+
+		private Bounds getDrawBounds(Label start) {
+			return drawGroup.sceneToLocal(start.localToScene(start.getBoundsInLocal()));
+		}
+
+		private void drawLine(Bounds start, Bounds end) {
+			Line parentLine = new Line(start.getCenterX(),
+									   start.getCenterY(),
+									   end.getCenterX(),
+									   end.getCenterY());
+
+			parentLine.getStyleClass().add("parent-edge");
+			drawGroup.getChildren().add(parentLine); 
+		}
+
 		@Override
 		public void changed(ObservableValue<? extends Boolean> obs, Boolean old, Boolean newv) {
 			if (newv == false) {
@@ -59,32 +89,18 @@ public class AttackStepHoverListener {
 
 			} else {
 				// Hovering
+
 				try {
 					ReadOnlyBooleanProperty prop = (ReadOnlyBooleanProperty) obs;
 					Label lbl = (Label) prop.getBean();
-					MalAttackStep step = labelStepMap.get(lbl);
+					MalAbstractStep step = labelStepMap.get(lbl);
 
-					Bounds lblSceneBounds = drawGroup
-						.sceneToLocal(lbl.localToScene(lbl.getBoundsInLocal()));
-
-					for (int id : step.parents) {
-						Label other = stepIdToLabel.get(id);
-						Bounds otherSceneBounds = drawGroup
-							.sceneToLocal(other.localToScene(other.getBoundsInLocal()));
-
-						Line parentLine = new Line(lblSceneBounds.getCenterX(),
-												   lblSceneBounds.getCenterY(),
-												   otherSceneBounds.getCenterX(),
-												   otherSceneBounds.getCenterY());
-
-						parentLine.getStyleClass().add("parent-edge");
-						drawGroup.getChildren().add(parentLine); 
-
+					if (showParents) {
+						showParentSteps(step, lbl);
 					}
-				} catch (Exception e) {
-				}
-			}
 
+				} catch (Exception e) {}
+			}
 		}
 	};
 }
