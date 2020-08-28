@@ -41,6 +41,7 @@ public class Main extends Application {
 
 	public Graph graph = new Graph();
 	public Map<String, MalModel> simulations = new HashMap<>();
+
 	public CoverageData currentCoverage;
 
 	@Override
@@ -99,16 +100,22 @@ public class Main extends Application {
 		MenuItem vitem1 = new MenuItem("Rearrange Cells");
 		MenuItem vCoverage = new MenuItem("Coverage Info");
 		CheckMenuItem vShowParents = new CheckMenuItem("Show Parents");
+		CheckMenuItem vShowChildren = new CheckMenuItem("Show Children");
 
 		vzoomreset.setOnAction(e -> graph.resetZoom());
 		vitem1.setOnAction(e -> graph.layoutCells());
 		vCoverage.setOnAction(e -> new CoverageWindow(currentCoverage));
 		vShowParents.selectedProperty().addListener((obs, old, newV) -> {
-				_stepHoverListener.showParents = newV;
-			});
+			_stepHoverListener.showParents = newV;
+		});
 		_stepHoverListener.showParents = vShowParents.isSelected();
 
-		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage, vShowParents);
+		vShowChildren.selectedProperty().addListener((obs, old, newV) -> {
+			_stepHoverListener.showChildren = newV;
+		});
+		_stepHoverListener.showChildren = vShowChildren.isSelected();
+
+		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage, vShowParents, vShowChildren);
 		menuBar.getMenus().addAll(fileMenu, viewMenu);
 
 		return menuBar;
@@ -181,6 +188,7 @@ public class Main extends Application {
 
 		_stepHoverListener.labelStepMap = cellConstructor.labelToStep;
 		_stepHoverListener.stepIdToLabel = cellConstructor.stepIdToLabel;
+		_stepHoverListener.currentModel = model;
 
 		// We need to apply the layout in order to get the correct
 		// layout values (width, height, etc) from javafx elements.

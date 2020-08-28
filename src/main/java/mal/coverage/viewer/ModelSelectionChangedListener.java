@@ -67,8 +67,10 @@ public class ModelSelectionChangedListener {
 			} else {
 				// New model
 				if (_application.simulations.containsKey(modelName)) {
+					MalModel mdl = _application.simulations.get(modelName);
+
 					_application.graph.clear();
-					_application.displayMALModel(_application.simulations.get(modelName));
+					_application.displayMALModel(mdl);
 
 				} else {
 					new Alert(Alert.AlertType.ERROR, String.format("Model with name '%s' does not exist.", modelName))

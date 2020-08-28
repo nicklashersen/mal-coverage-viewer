@@ -1,6 +1,7 @@
 package mal.coverage.viewer;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -9,19 +10,23 @@ import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Line;
-import mal.coverage.viewer.model.MalAttackStep;
 import mal.coverage.viewer.model.MalAbstractStep;
+import mal.coverage.viewer.model.MalAsset;
+import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
 public class AttackStepHoverListener {
-	public Graph graph;
-	public Group drawGroup = new Group();
+	private Graph graph;
+	private Group drawGroup = new Group();
+
 	public Map<Label, MalAbstractStep> labelStepMap;
 	public Map<Integer, Label> stepIdToLabel;
+	public MalModel currentModel;
 
 	public boolean showParents;
+	public boolean showChildren;
 
 	public AttackStepHoverListener(Graph g) {
 		this.graph = g;
@@ -66,6 +71,19 @@ public class AttackStepHoverListener {
 			}
 		}
 
+		private void showChildSteps(MalAbstractStep step, Label lbl) {
+			Bounds parentBounds = getDrawBounds(lbl);
+
+			for (int con : currentModel.assets.get(step.assetHash).connections) {
+				MalAsset asset = currentModel.assets.get(con);
+
+				Stream.concat(asset.steps.values().stream(), asset.defense.values().stream())
+					.filter(childStep -> childStep.parents.contains(step.hash))
+					.map(childStep -> stepIdToLabel.get(childStep.hash))
+					.forEach(cLbl -> drawLine(getDrawBounds(cLbl), parentBounds));
+			}
+		}
+
 
 		private Bounds getDrawBounds(Label start) {
 			return drawGroup.sceneToLocal(start.localToScene(start.getBoundsInLocal()));
@@ -97,6 +115,10 @@ public class AttackStepHoverListener {
 
 					if (showParents) {
 						showParentSteps(step, lbl);
+					}
+
+					if (showChildren) {
+						showChildSteps(step, lbl);
 					}
 
 				} catch (Exception e) {}
