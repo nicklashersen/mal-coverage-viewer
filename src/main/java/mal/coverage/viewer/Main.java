@@ -37,16 +37,15 @@ import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
 public class Main extends Application {
-	public static final Color COLOR_COMPROMISED = Color.RED;
-	public static final Color COLOR_COMPROMISED_EFFORT = Color.ORANGE;
-	public static final Color COLOR_COMPROMISED_MUCH_EFFORT = Color.YELLOW;
-
 	private Stage stage;
-	private Graph graph = new Graph();
 	private BorderPane root = new BorderPane();
 	private TreeView<String> simulationTree = new TreeView<>();
 	private TreeItem<String> _simTreeRoot = new TreeItem<>();
-	private Map<String, MalModel> _simulations = new HashMap<>();
+
+	private ModelSelectionChangedListener _mdlSelectionChangedListener = new ModelSelectionChangedListener(this);
+
+	public Graph graph = new Graph();
+	public Map<String, MalModel> simulations = new HashMap<>();
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -59,7 +58,7 @@ public class Main extends Application {
 		simulationTree.setPrefWidth(200);
 		simulationTree.setRoot(_simTreeRoot);
 		simulationTree.setShowRoot(false);
-		simulationTree.getSelectionModel().selectedItemProperty().addListener(selectionChangedListener);
+		_mdlSelectionChangedListener.registerTreeView(simulationTree);
 
 		Scene scene = new Scene(root, 1024, 769);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
@@ -117,7 +116,7 @@ public class Main extends Application {
 	 */
 	private void loadFile(File file) {
 		_simTreeRoot.getChildren().clear();
-		_simulations.clear();
+		simulations.clear();
 		graph.clear();
 
 		List<MalModel> models = getLoader(file).parse(file);
@@ -127,7 +126,7 @@ public class Main extends Application {
 			String mdlName = "Model " + nMdls;
 			nMdls++;
 
-			_simulations.put(mdlName, m);
+			simulations.put(mdlName, m);
 			TreeItem<String> mdlLeaf = new TreeItem<>(mdlName);
 			_simTreeRoot.getChildren().add(mdlLeaf);
 
@@ -165,7 +164,7 @@ public class Main extends Application {
 	 * 
 	 * @param model MalModel to display
 	 */
-	private void displayMALModel(MalModel model) {
+	public void displayMALModel(MalModel model) {
 		for (MalAsset asset : model.assets.values()) {
 			DataCell cell = new DataCell(asset);
 
@@ -186,132 +185,6 @@ public class Main extends Application {
 			}
 		}
 	}
-
-	private ChangeListener<TreeItem<String>> selectionChangedListener = new ChangeListener<>() {
-		private String getModelName(TreeItem<String> item) {
-			if (item == null)
-				return "";
-
-			if (item.getParent().equals(_simTreeRoot)) {
-				// Model node
-				return item.getValue();
-			} else if (item.getChildren().isEmpty()) {
-				// Test method node
-				return item.getParent().getParent().getValue();
-			} else {
-				// Test class node
-				return item.getParent().getValue();
-			}
-		}
-
-		/**
-		 * Prepare the model display in the graph view. Return true if successful, false
-		 * otherwise.
-		 */
-		private boolean updateModel(String modelName, String oldMdlName) {
-			if (oldMdlName.equals(modelName)) {
-				// Same model
-				for (Cell c : graph.getCells()) {
-					((DataCell) c).resetAllAttribColor();
-				}
-
-			} else {
-				// New model
-				if (_simulations.containsKey(modelName)) {
-					graph.clear();
-					displayMALModel(_simulations.get(modelName));
-
-				} else {
-					new Alert(Alert.AlertType.ERROR, String.format("Model with name '%s' does not exist.", modelName))
-							.showAndWait();
-
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		private Map<Integer, Double> getCompromised(TreeItem<String> item) {
-			Map<Integer, Double> simulationResults;
-
-			if (item.getParent().equals(_simTreeRoot)) {
-				// Load model
-				MalModel mdl = _simulations.get(getModelName(item));
-				simulationResults = SimulationMerger.mergeModel(mdl);
-
-			} else if (item.getChildren().isEmpty()) {
-				// Load simulation
-				MalModel mdl = _simulations.get(getModelName(item));
-				String key = String.format("%s.%s", item.getParent().getValue(), item.getValue());
-				simulationResults = mdl.simulations.get(key).compromisedAttackSteps;
-
-			} else {
-				// Load test class
-				MalModel mdl = _simulations.get(getModelName(item));
-				simulationResults = SimulationMerger.mergeModelByClassname(mdl, item.getValue());
-			}
-
-			return simulationResults;
-		}
-
-		@Override
-		public void changed(ObservableValue<? extends TreeItem<String>> obs, TreeItem<String> old,
-				TreeItem<String> selected) {
-			// Selection cleared
-			if (selected == null)
-				return;
-
-			String oldMdlName = getModelName(old);
-			String modelName = getModelName(selected);
-
-			if (updateModel(modelName, oldMdlName)) {
-				Map<Integer, Double> simRes = getCompromised(selected);
-				MalModel mdl = _simulations.get(modelName);
-
-				mal.coverage.viewer.model.coverage.CoverageData data = new CoverageData(mdl, simRes);
-				data.forEach(d -> {
-					CoverageData.Entry entry = (CoverageData.Entry) d;
-					System.out.println(String.format("%20s [%d/%d] %f", entry.name, entry.nCompromised, entry.nMax, (double) entry.nCompromised / entry.nMax));
-					});
-				// TODO: display coverage data
-
-				simRes.forEach((id, ttc) -> {
-					MalAttackStep step = mdl.attackSteps.get(id);
-					int assetHash;
-					String attribName;
-
-					if (step == null) {
-						MalDefense def = mdl.defenses.get(id);
-
-						if (def == null) {
-							System.err.println("WARNING: Found invalid compromised attack step reference. IGNORING");
-							System.err.println(String.format("    ID: %d -> null", id));
-							return;
-						}
-						attribName = def.name;
-						assetHash = def.assetHash;
-
-					} else {
-						attribName = step.name;
-						assetHash = step.assetHash;
-
-					}
-
-					DataCell cell = (DataCell) graph.getCell(assetHash);
-
-					if (ttc < MalAttackStep.COMPROMISED_WITH_EFFORT_LOW) {
-						cell.setAttribColor(attribName, COLOR_COMPROMISED);
-					} else if (ttc < MalAttackStep.COMPROMISED_WITH_EFFORT_HIGH) {
-						cell.setAttribColor(attribName, COLOR_COMPROMISED_EFFORT);
-					} else {
-						cell.setAttribColor(attribName, COLOR_COMPROMISED_MUCH_EFFORT);
-					}
-				});
-			}
-
-		}
-	};
 
 	public static void main(String[] args) {
 		launch(args);
