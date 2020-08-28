@@ -25,6 +25,7 @@ import mal.coverage.viewer.model.MalSimulation;
 import mal.coverage.viewer.model.coverage.CoverageData;
 import mal.coverage.viewer.model.util.JSONLoader;
 import mal.coverage.viewer.model.util.ModelLoader;
+import mal.coverage.viewer.util.AssetDataCellConstructor;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
@@ -35,7 +36,7 @@ public class Main extends Application {
 	private TreeItem<String> _simTreeRoot = new TreeItem<>();
 
 	private ModelSelectionChangedListener _mdlSelectionChangedListener = new ModelSelectionChangedListener(this);
-	private AttackStepHoverListener _stepHoverListener = new AttackStepHoverListener();
+	private AttackStepHoverListener _stepHoverListener;
 
 	public Graph graph = new Graph();
 	public Map<String, MalModel> simulations = new HashMap<>();
@@ -53,6 +54,7 @@ public class Main extends Application {
 		simulationTree.setRoot(_simTreeRoot);
 		simulationTree.setShowRoot(false);
 		_mdlSelectionChangedListener.registerTreeView(simulationTree);
+		_stepHoverListener = new AttackStepHoverListener(graph);
 
 		Scene scene = new Scene(root, 1024, 769);
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
@@ -161,12 +163,16 @@ public class Main extends Application {
 	 * @param model MalModel to display
 	 */
 	public void displayMALModel(MalModel model) {
+		AssetDataCellConstructor cellConstructor = new AssetDataCellConstructor();
+
 		for (MalAsset asset : model.assets.values()) {
-			DataCell cell = new DataCell(asset);
+			DataCell cell = cellConstructor.cellFromAsset(asset);
 			_stepHoverListener.registerDataCell(cell);
 
 			graph.addCell(asset.hash, cell);
 		}
+
+		_stepHoverListener.labelStepMap = cellConstructor.labelToStep;
 
 		// We need to apply the layout in order to get the correct
 		// layout values (width, height, etc) from javafx elements.

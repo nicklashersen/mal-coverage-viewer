@@ -11,7 +11,7 @@ import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
 
 /**
- * CoverageData
+ * Window for displaying coverage data.
  */
 public class CoverageData implements Iterable<CoverageData.Entry> {
 	private Map<String, Entry> coverageResults = new HashMap<>();

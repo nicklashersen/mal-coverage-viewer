@@ -11,83 +11,73 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import mal.coverage.viewer.model.MalAsset;
-import mal.coverage.viewer.model.MalDefense;
-import mal.coverage.viewer.model.MalAttackStep;
 
 public class DataCell extends Cell {
-	protected MalAsset asset;
-
-	public static final double FONT_NAME_SIZE = 12;
-	public static final double FONT_CLASS_SIZE = 8;
-	public static final double NAME_PADDING = 5;
-	public static final Color BG_HEAD = Color.LIGHTGREY;
+	public static final double FONT_TITLE_SIZE = 12;
+	public static final double FONT_SUBTITLE_SIZE = 8;
+	public static final double TITLE_PADDING = 5;
+	public static final Color  BG_HEAD = Color.LIGHTGREY;
 
 	public Color defaultAttribColor = Color.BLACK;
 
-	private Label className = new Label();
-	private Label name = new Label();
+	private Label subtitle = new Label();
+	private Label title = new Label();
+	private VBox _attribView = new VBox();
 
-	public Map<String, Label> attribs;
+	public Map<String, Label> attribs = new HashMap<>();
 
-	public DataCell(MalAsset asset) {
+	public DataCell(String title, String subtitle) {
+		this.title.setText(title);
+		this.subtitle.setText(subtitle);
+
 		setStyle("-fx-border-color: black; -fx-border-width: 1");
-		className.setText(asset.assetName);
-		name.setText(asset.name);
 
-		/* Font sizes */
-		name.setFont(new Font(FONT_NAME_SIZE));
-		name.setTextFill(Color.BLACK);
-		name.setPadding(new Insets(NAME_PADDING, NAME_PADDING, 0, NAME_PADDING));
-		name.setStyle("-fx-font-weight: bold");
-		className.setFont(new Font(FONT_CLASS_SIZE));
-		className.setTextFill(Color.BLACK);
-		className.setPadding(new Insets(0, NAME_PADDING, 0, NAME_PADDING));
-		className.setStyle("-fx-border-color: black; -fx-border-width: 0 0 1 0");
+		// Title style
+		this.title.setFont(new Font(FONT_TITLE_SIZE));
+		this.title.setTextFill(Color.BLACK);
+		this.title.setPadding(new Insets(TITLE_PADDING, TITLE_PADDING, 0, TITLE_PADDING));
+		this.title.setStyle("-fx-font-weight: bold");
 
-		/* Attack steps and defenses */
-		VBox fields = new VBox();
-		attribs = _compAttackSteps(asset);
+		// Subtitle style
+		this.subtitle.setFont(new Font(FONT_SUBTITLE_SIZE));
+		this.subtitle.setTextFill(Color.BLACK);
+		this.subtitle.setPadding(new Insets(0, TITLE_PADDING, 0, TITLE_PADDING));
+		this.subtitle.setStyle("-fx-border-color: black; -fx-border-width: 0 0 1 0");
 
-		for (MalDefense s : asset.defense.values()) {
-			attribs.put(s.name, new Label("# " + s.name));
-		}
+		_attribView.setStyle("-fx-padding: 5");
+		VBox vert = new VBox(this.title, this.subtitle, _attribView);
 
-		fields.getChildren().addAll(attribs.values());
-		fields.setStyle("-fx-padding: 5");
-
-		/* Layout */
-		VBox vertLayout = new VBox(name, className, fields);
 		setBackground(new Background(new BackgroundFill(BG_HEAD, null, null)));
-		vertLayout.setAlignment(Pos.TOP_CENTER);
+		vert.setAlignment(Pos.TOP_CENTER);
 
-		getChildren().add(vertLayout);
+		getChildren().add(vert);
 	}
 
 	/**
-	 * Compute attack step node attributes and color based on coverage.
-	 * 
-	 * @param asset mal asset desciption.
-	 * @return attribute, label map.
+	 * Adds an attriubte with the specified text to the data node.
+	 * If an attribute with such a name already exist, the existing
+	 * label will be returned. Otherwise the new label will be returned.
+	 *
+	 * @param attrib attribute name
+	 * @return label associated with the attribute name.	
 	 */
-	private Map<String, Label> _compAttackSteps(MalAsset asset) {
-		Map<String, Label> attribs;
-
-		attribs = new HashMap<>(asset.steps.size() + asset.defense.size());
-		for (MalAttackStep step : asset.steps.values()) {
-			Label lblStep = new Label(String.format("%s %s", step.type, step.name));
-
-			attribs.put(step.name, lblStep);
-		}
-
-		return attribs;
+	public Label addAttribute(String attrib) {
+		Label res = attribs.computeIfAbsent(attrib, (key) -> {
+			Label label = new Label();
+			label.setText(key);
+	
+			_attribView.getChildren().add(label);
+			return label;
+		});
+	
+		return res;
 	}
-
+	
 	/**
 	 * Set the color of an attribute if present.
 	 *
-	 * @param name of the attribute.
-	 * @param color new color.	
+	 * @param name  of the attribute.
+	 * @param color new color.
 	 */
 	public void setAttribColor(String name, Color color) {
 		attribs.computeIfPresent(name, (key, label) -> {

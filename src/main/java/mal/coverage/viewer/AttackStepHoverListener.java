@@ -1,13 +1,28 @@
 package mal.coverage.viewer;
 
+import java.util.Map;
+
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
+import mal.coverage.viewer.model.MalAttackStep;
 import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
 public class AttackStepHoverListener {
+	public Graph graph;
+	public Group drawGroup = new Group();
+	public Map<Label, MalAttackStep> labelStepMap;
+
+	public AttackStepHoverListener(Graph g) {
+		this.graph = g;
+
+		graph.addLayer(drawGroup);
+	}
+
 	/**
 	 * Registers the hover handler for all attributes of
 	 * a data cell.	
@@ -39,7 +54,23 @@ public class AttackStepHoverListener {
 	private ChangeListener<Boolean> _listener = new ChangeListener<>() {
 		@Override
 		public void changed(ObservableValue<? extends Boolean> obs, Boolean old, Boolean newv) {
-			System.out.println(obs.toString() + " " + pb(old) + " -> " + pb(newv));
+			if (newv == false) {
+				// Focus lost
+				drawGroup.getChildren().clear();
+
+			} else {
+				// Hovering
+				try {
+					ReadOnlyBooleanProperty prop = (ReadOnlyBooleanProperty) obs;
+					Label lbl = (Label) prop.getBean();
+					MalAttackStep step = labelStepMap.get(lbl);
+
+					System.out.println(step.parents);
+						// MalAttackStep step = lbl.labelToStep.get(lbl);
+
+						// System.out.println("Hovering over: " + step.hash);
+				} catch (Exception e) {}
+			}
 
 		}
 	};

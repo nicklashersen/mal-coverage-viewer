@@ -6,5 +6,5 @@ import java.util.List;
 import javafx.scene.layout.Pane;
 
 public class Cell extends Pane {
-    List<Edge> edges = new LinkedList<>();
+	List<Edge> edges = new LinkedList<>();
 }

@@ -134,11 +134,11 @@ public class ModelSelectionChangedListener {
 							System.err.println(String.format("    ID: %d -> null", id));
 							return;
 						}
-						attribName = def.name;
+						attribName = String.format("# %s", def.name);
 						assetHash = def.assetHash;
 
 					} else {
-						attribName = step.name;
+						attribName = String.format("%s %s", step.type, step.name);
 						assetHash = step.assetHash;
 
 					}

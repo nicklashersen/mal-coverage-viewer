@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.Pane;
 import mal.coverage.viewer.layout.Layout;
 import mal.coverage.viewer.layout.RandomLayout;
 
@@ -20,7 +20,7 @@ public class Graph {
     private Map<Integer, Cell> cells = new HashMap<>();
     private List<Edge> edges = new LinkedList<>();
 
-    private Pane cellLayer = new Pane();
+    private Group cellLayer = new Group();
 
     protected Layout cellLayout;
 
@@ -58,10 +58,17 @@ public class Graph {
         edges.clear();
     }
 
-    /**
-     * Add a cell to the graph view.
-     * @param cell
-     */
+	/**
+	 * Add another (draw) layer to the graph.
+	 */
+	public void addLayer(Node layer) {
+		canvas.getChildren().add(layer);
+	}
+
+	/**
+	 * Add a cell to the graph view.
+	 * @param cell
+	 */
     public void addCell(int id, Cell cell) {
         cells.put(id, cell);
 
