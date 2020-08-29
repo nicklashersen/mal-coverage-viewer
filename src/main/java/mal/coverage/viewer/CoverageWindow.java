@@ -39,7 +39,7 @@ public class CoverageWindow {
 			tcPercentage.setCellValueFactory(new PropertyValueFactory<>("percentage"));
 
 			tcName.setMinWidth(200);
-			table.getColumns().addAll(tcName, tcAll, tcComp, tcPercentage);
+			table.getColumns().addAll(tcName, tcComp, tcAll, tcPercentage);
 			root.getChildren().add(table);
 
 			stage.setTitle("Coverage - " + data.selectionName);

@@ -2,12 +2,14 @@ package mal.coverage.viewer.model.coverage;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import mal.coverage.viewer.model.MalAbstractStep;
 import mal.coverage.viewer.model.MalAsset;
-import mal.coverage.viewer.model.MalAttackStep;
-import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
 
 /**
@@ -72,8 +74,13 @@ public class CoverageData implements Iterable<CoverageData.Entry> {
 			boolean fullyCompromised = true;
 			boolean partCompromised = false;
 
+			List<MalAbstractStep> steps =
+				Stream.concat(asset.steps.values().stream(),
+							  asset.defense.values().stream())
+					.collect(Collectors.toList());
+
 			// Compute compromised attack steps
-			for (MalAttackStep step : asset.steps.values()) {
+			for (MalAbstractStep step : steps) {
 				boolean compromised = compromisedSteps.containsKey(step.hash);
 
 				fullyCompromised = fullyCompromised && compromised;
@@ -81,29 +88,13 @@ public class CoverageData implements Iterable<CoverageData.Entry> {
 
 				// Compute compromised edges
 				for (int parentId : step.parents) {
-					if (compromised && compromisedSteps.containsKey(parentId)) {
+					if (compromisedSteps.containsKey(parentId)) {
 						nCompromisedEdges++;
 					}
 				}
 
 				// Compute total edges
 				nEdges += step.parents.size();
-			}
-
-			// Do the same thing for all registered defenses
-			for (MalDefense def : asset.defense.values()) {
-				boolean compromised = compromisedSteps.containsKey(def.hash);
-
-				fullyCompromised = fullyCompromised && compromised;
-				partCompromised = partCompromised || compromised;
-
-				for (int parentId : def.parents) {
-					if (compromised && compromisedSteps.containsKey(parentId)) {
-						nCompromisedEdges++;
-					}
-				}
-
-				nEdges += def.parents.size();
 			}
 
 			if (partCompromised) {
