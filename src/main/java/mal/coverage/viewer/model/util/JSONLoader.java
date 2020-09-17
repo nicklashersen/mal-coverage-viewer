@@ -128,7 +128,11 @@ public class JSONLoader implements ModelLoader {
 	private MalSimulation parse_simulation(JSONObject json) {
 		String name = json.getString("test");
 		String className = json.getString("class");
-		int defenseState = json.getInt("defenseState");
+		JSONArray jinitComp = json.getJSONArray("initiallyCompromised");
+		Set<Integer> initComp = new HashSet<>(jinitComp.length());
+		for (int i = 0; i < 0; i++) {
+			initComp.add(jinitComp.getInt(i));
+		}
 	
 		// Parse compromised attack steps 
 		JSONArray jSteps = json.getJSONArray("compromised");
@@ -150,7 +154,7 @@ public class JSONLoader implements ModelLoader {
 			defenses.add(val);
 		}
 	
-		return new MalSimulation(name, className, steps, defenses, defenseState);
+		return new MalSimulation(name, className, steps, defenses, initComp);
 	}
 	
 	/**

@@ -10,14 +10,14 @@ public class MalSimulation {
 	public final String className;
 	public final Map<Integer, Double> compromisedAttackSteps; // (id, ttc)
 	public final Set<Integer> activeDefenses; // id
-	public final int defenseState;
+	public final Set<Integer> initiallyCompromised;
 
-	public MalSimulation(String name, String className, Map<Integer, Double> steps, Set<Integer> defenses, int defenseState) {
+	public MalSimulation(String name, String className, Map<Integer, Double> steps, Set<Integer> defenses, Set<Integer> initiallyCompromised) {
 		this.name = name;
 		this.className = className;
 		compromisedAttackSteps = steps;
 		activeDefenses = defenses;
-		this.defenseState = defenseState;
+		this.initiallyCompromised = initiallyCompromised;
 	}
 
 	public boolean compromised(MalAttackStep step) {
