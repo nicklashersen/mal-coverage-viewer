@@ -1,7 +1,7 @@
 package mal.coverage.viewer;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -14,7 +14,7 @@ import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.model.MalSimulation;
 import mal.coverage.viewer.model.coverage.CoverageData;
-import mal.coverage.viewer.model.util.SimulationMerger;
+import mal.coverage.viewer.model.coverage.StandardCoverage;
 import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 
@@ -80,37 +80,38 @@ public class ModelSelectionChangedListener {
 			return true;
 		}
 
-		private Map<Integer, Double> getCompromised(TreeItem<String> item) {
-			Map<Integer, Double> simulationResults;
+		private CoverageData getCoverage(TreeItem<String> item) {
 			String modelName = getModelName(item);
 			MalModel mdl = _application.simulations.get(modelName);
+			StandardCoverage sc = new StandardCoverage();
+			CoverageData cData;
 
 			if (item.getParent().equals(_simTreeRoot)) {
 				// Load model
-				simulationResults = SimulationMerger.mergeModel(mdl);
+				cData = sc.computeModelCoverage(mdl);
 
 			} else if (item.getParent().getParent().equals(_simTreeRoot)) {
 				// Load SimGroup
-				simulationResults = new HashMap<>();
 				String selection = item.getValue();
 				int sgHash = _application.mdlGrpNameMap.get(modelName).get(selection);
 
-				//% TODO
-				for (MalSimulation sim : mdl.simulationGroup.get(sgHash)) {
-					simulationResults = SimulationMerger.mergeSimulation(simulationResults, sim);
-				}
+				cData = sc.computeSimGroupCoverage(mdl, mdl.simulationGroup.get(sgHash));
 				
 			} else if (item.getChildren().isEmpty()) {
 				// Load simulation
 				String key = String.format("%s.%s", item.getParent().getValue(), item.getValue());
-				simulationResults = mdl.simulations.get(key).compromisedAttackSteps;
+				cData = sc.computeSimulationCoverage(mdl, mdl.simulations.get(key));
 
 			} else {
 				// Load test class
-				simulationResults = SimulationMerger.mergeModelByClassname(mdl, item.getValue());
+				List<MalSimulation> sims = mdl.simulations.values().stream()
+					.filter(sim -> sim.className.equals(item.getValue()))
+					.collect(Collectors.toList());
+					
+				cData = sc.computeClassCoverage(mdl, sims);
 			}
 
-			return simulationResults;
+			return cData;
 		}
 
 		@Override
@@ -124,13 +125,12 @@ public class ModelSelectionChangedListener {
 			String modelName = getModelName(selected);
 
 			if (updateModel(modelName, oldMdlName)) {
-				Map<Integer, Double> simRes = getCompromised(selected);
 				MalModel mdl = _application.simulations.get(modelName);
 
-				CoverageData data = new CoverageData(mdl, simRes, selected.getValue());
+				CoverageData data = getCoverage(selected);
 				_application.currentCoverage = data;
 
-				simRes.forEach((id, ttc) -> {
+				data.compromised.forEach((id, ttc) -> {
 					MalAttackStep step = mdl.attackSteps.get(id);
 					int assetHash;
 					String attribName;
