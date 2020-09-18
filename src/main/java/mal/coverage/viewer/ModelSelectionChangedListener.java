@@ -128,6 +128,7 @@ public class ModelSelectionChangedListener {
 				MalModel mdl = _application.simulations.get(modelName);
 
 				CoverageData data = getCoverage(selected);
+				data.selectionName = selected.getValue();
 				_application.currentCoverage = data;
 
 				data.compromised.forEach((id, ttc) -> {

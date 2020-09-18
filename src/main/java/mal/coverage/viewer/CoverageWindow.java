@@ -1,6 +1,7 @@
 package mal.coverage.viewer;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -69,8 +70,8 @@ public class CoverageWindow {
 			name = entry.name;
 			compromised = entry.nCompromised.toString();
 			max = entry.nMax.toString();
-			percentage = new BigDecimal(entry.nCompromised)
-				.divide(new BigDecimal(entry.nMax))
+			percentage = new BigDecimal(entry.nCompromised, new MathContext(5))
+				.divide(new BigDecimal(entry.nMax, new MathContext(5)), 5, BigDecimal.ROUND_HALF_DOWN)
 				.toEngineeringString();
 		}
 
