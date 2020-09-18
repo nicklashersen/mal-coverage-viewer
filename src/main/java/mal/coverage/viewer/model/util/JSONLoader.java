@@ -130,10 +130,10 @@ public class JSONLoader implements ModelLoader {
 		String className = json.getString("class");
 		JSONArray jinitComp = json.getJSONArray("initiallyCompromised");
 		Set<Integer> initComp = new HashSet<>(jinitComp.length());
-		for (int i = 0; i < 0; i++) {
+		for (int i = 0; i < jinitComp.length(); i++) {
 			initComp.add(jinitComp.getInt(i));
 		}
-	
+
 		// Parse compromised attack steps 
 		JSONArray jSteps = json.getJSONArray("compromised");
 		Map<Integer, Double> steps = new HashMap<>(jSteps.length());

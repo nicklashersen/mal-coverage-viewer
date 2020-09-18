@@ -222,9 +222,7 @@ public class Main extends Application {
 		// Add edges between nodes
 		for (MalAsset asset : model.assets.values()) {
 			for (int nodeId : asset.connections) {
-				if (asset.hash > nodeId) {
-					graph.addEdge(asset.hash, nodeId);
-				}
+				graph.addEdge(asset.hash, nodeId);
 			}
 		}
 	}

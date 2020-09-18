@@ -77,19 +77,21 @@ public class StandardCoverage implements CoverageBuilder {
 	@Override
 	public CoverageData computeClassCoverage(MalModel mdl, List<MalSimulation> sims) {
 		Map<Integer, Double> compromised = new HashMap<>();
-		Set<Integer> groups = new HashSet<>();
+		Set<Integer> states = new HashSet<>();
+		Set<Integer> simGroups = new HashSet<>();
 
 		for (MalSimulation sim : sims) {
-			groups.add(sim.initiallyCompromised.hashCode());
+			states.add(sim.activeDefenses.hashCode());
+			simGroups.add(sim.initiallyCompromised.hashCode());
 			SimulationMerger.mergeSimulation(compromised, sim);
 		}
 
 		CoverageData cData = computeCoverage(mdl, compromised);
 		BigInteger defStates = BigInteger.valueOf(2)
 			.pow(mdl.defenses.size())
-			.multiply(BigInteger.valueOf(groups.size()));
+			.multiply(BigInteger.valueOf(simGroups.size()));
 
-		cData.add("Defense", defStates, BigInteger.valueOf(groups.size()));
+		cData.add("Defense", defStates, BigInteger.valueOf(states.size()));
 		cData.compromised = compromised;
 
 		return cData;
@@ -101,8 +103,8 @@ public class StandardCoverage implements CoverageBuilder {
 
 		// Defense state coverage
 		int coveredStates = mdl.simulationGroup.values().stream()
-			.flatMap(s -> s.stream())
-			.collect(Collectors.toSet()).size();
+			.map(s -> s.size())
+			.reduce(0, Integer::sum);
 
 		BigInteger states = BigInteger.valueOf(2)
 			.pow(mdl.defenses.size())
@@ -142,7 +144,8 @@ public class StandardCoverage implements CoverageBuilder {
 		}
 
 		CoverageData cData = computeCoverage(mdl, compromised);
-		cData.add("Defense", BigInteger.valueOf(2).pow(mdl.defenses.size()),
+		cData.add("Defense",
+				  BigInteger.valueOf(2).pow(mdl.defenses.size()),
 				  BigInteger.valueOf(group.size() - mismatches));
 		cData.compromised = compromised;
 
