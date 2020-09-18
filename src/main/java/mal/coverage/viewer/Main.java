@@ -41,6 +41,7 @@ public class Main extends Application {
 
 	public Graph graph = new Graph();
 	public Map<String, MalModel> simulations = new HashMap<>();
+	public Map<String, Map<String, Integer>> mdlGrpNameMap = new HashMap<>();
 
 	public CoverageData currentCoverage;
 
@@ -130,6 +131,7 @@ public class Main extends Application {
 		_simTreeRoot.getChildren().clear();
 		simulations.clear();
 		graph.clear();
+		mdlGrpNameMap.clear();
 
 		List<MalModel> models = getLoader(file).parse(file);
 
@@ -142,15 +144,37 @@ public class Main extends Application {
 			TreeItem<String> mdlLeaf = new TreeItem<>(mdlName);
 			_simTreeRoot.getChildren().add(mdlLeaf);
 
-			Map<String, TreeItem<String>> testClasses = new HashMap<>();
+			Map<Integer, Map<String, TreeItem<String>>> simGroups = new HashMap<>();
 			for (MalSimulation sim : m.simulations.values()) {
+				int simGroup = sim.initiallyCompromised.hashCode();
+
+				Map<String, TreeItem<String>> testClasses
+					= simGroups.computeIfAbsent(simGroup, s -> new HashMap<>());
+
 				TreeItem<String> simLeaf = new TreeItem<>(sim.name);
 
 				TreeItem<String> testClass = testClasses.computeIfAbsent(sim.className, s -> new TreeItem<>(s));
 				testClass.getChildren().add(simLeaf);
 			}
 
-			mdlLeaf.getChildren().addAll(testClasses.values());
+			// Add simulation group tree items
+			Map<String, Integer> sgNameToInt = new HashMap<>();
+			int groupNumber = 1;
+			for (var simGroup : simGroups.entrySet()) {
+				String simGroupName = String.format("SG %d", groupNumber);
+				TreeItem<String> simGroupItem = new TreeItem<>(simGroupName);
+				sgNameToInt.put(simGroupName, simGroup.getKey());
+
+				for (TreeItem<String> testClass : simGroup.getValue().values()) {
+					simGroupItem.getChildren().add(testClass);
+				}
+
+				mdlLeaf.getChildren().add(simGroupItem);
+
+				groupNumber++;
+			}
+
+			mdlGrpNameMap.put(mdlName, sgNameToInt);
 		}
 	}
 

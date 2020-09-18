@@ -1,5 +1,6 @@
 package mal.coverage.viewer;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javafx.beans.value.ChangeListener;
@@ -11,6 +12,7 @@ import javafx.scene.paint.Color;
 import mal.coverage.viewer.model.MalAttackStep;
 import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
+import mal.coverage.viewer.model.MalSimulation;
 import mal.coverage.viewer.model.coverage.CoverageData;
 import mal.coverage.viewer.model.util.SimulationMerger;
 import mal.coverage.viewer.view.Cell;
@@ -41,16 +43,11 @@ public class ModelSelectionChangedListener {
 			if (item == null)
 				return "";
 
-			if (item.getParent().equals(_simTreeRoot)) {
-				// Model node
-				return item.getValue();
-			} else if (item.getChildren().isEmpty()) {
-				// Test method node
-				return item.getParent().getParent().getValue();
-			} else {
-				// Test class node
-				return item.getParent().getValue();
+			while (!item.getParent().equals(_simTreeRoot)) {
+				item = item.getParent();
 			}
+
+			return item.getValue();
 		}
 
 		/**
@@ -85,21 +82,31 @@ public class ModelSelectionChangedListener {
 
 		private Map<Integer, Double> getCompromised(TreeItem<String> item) {
 			Map<Integer, Double> simulationResults;
+			String modelName = getModelName(item);
+			MalModel mdl = _application.simulations.get(modelName);
 
 			if (item.getParent().equals(_simTreeRoot)) {
 				// Load model
-				MalModel mdl = _application.simulations.get(getModelName(item));
 				simulationResults = SimulationMerger.mergeModel(mdl);
 
+			} else if (item.getParent().getParent().equals(_simTreeRoot)) {
+				// Load SimGroup
+				simulationResults = new HashMap<>();
+				String selection = item.getValue();
+				int sgHash = _application.mdlGrpNameMap.get(modelName).get(selection);
+
+				//% TODO
+				for (MalSimulation sim : mdl.simulationGroup.get(sgHash)) {
+					simulationResults = SimulationMerger.mergeSimulation(simulationResults, sim);
+				}
+				
 			} else if (item.getChildren().isEmpty()) {
 				// Load simulation
-				MalModel mdl = _application.simulations.get(getModelName(item));
 				String key = String.format("%s.%s", item.getParent().getValue(), item.getValue());
 				simulationResults = mdl.simulations.get(key).compromisedAttackSteps;
 
 			} else {
 				// Load test class
-				MalModel mdl = _application.simulations.get(getModelName(item));
 				simulationResults = SimulationMerger.mergeModelByClassname(mdl, item.getValue());
 			}
 
