@@ -57,10 +57,10 @@ public class StandardCoverage implements CoverageBuilder {
 
 			if (partCompromised) {
 				nPartiallyCompromisedAssets++;
+			}
 
-				if (fullyCompromised) {
-					nFullyCompromisedAssets++;
-				}
+			if (fullyCompromised) {
+				nFullyCompromisedAssets++;
 			}
 
 		}
@@ -68,7 +68,7 @@ public class StandardCoverage implements CoverageBuilder {
 		CoverageData cData = new CoverageData();
 		cData.add("Full Asset", mdl.assets.size(), nFullyCompromisedAssets);
 		cData.add("Partial Asset", mdl.assets.size(), nPartiallyCompromisedAssets);
-		cData.add("AttackSteps", mdl.attackSteps.size() + mdl.defenses.size(), compromisedSteps.size());
+		cData.add("AttackSteps", mdl.attackSteps.size(), compromisedSteps.size());
 		cData.add("Edge", nEdges, nCompromisedEdges);
 
 		return cData;
