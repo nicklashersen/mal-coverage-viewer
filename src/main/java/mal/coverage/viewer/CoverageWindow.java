@@ -1,11 +1,8 @@
 package mal.coverage.viewer;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
@@ -64,27 +61,29 @@ public class CoverageWindow {
 	}
 
 	protected class CoverageProperty {
-		public Double percentage;
-		public Integer max;
-		public Integer compromised;
+		public String percentage;
+		public String max;
+		public String compromised;
 		public String name;
 
 		public CoverageProperty(CoverageData.Entry entry) {
 			name = entry.name;
-			compromised = new Integer(entry.nCompromised);
-			max = new Integer(entry.nMax);
-			percentage = new Double((double) entry.nCompromised / entry.nMax);
+			compromised = entry.nCompromised.toString();
+			max = entry.nMax.toString();
+			percentage = new BigDecimal(entry.nCompromised, new MathContext(5))
+				.divide(new BigDecimal(entry.nMax, new MathContext(5)), 5, BigDecimal.ROUND_HALF_DOWN)
+				.toEngineeringString();
 		}
 
-		public Double getPercentage() {
+		public String getPercentage() {
 			return percentage;
 		}
 
-		public Integer getMax() {
+		public String getMax() {
 			return max;
 		}
 
-		public Integer getCompromised() {
+		public String getCompromised() {
 			return compromised;
 		}
 

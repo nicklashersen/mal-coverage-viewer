@@ -47,9 +47,11 @@ public class MouseGesture {
 
             node.relocate(x / scale, y / scale);
 
-            for  (Edge edge : ((Cell) node).edges) {
+            for  (Edge edge : ((Cell) node).edges.values()) {
                 edge.update();
             }
+
+			e.consume();
         }
     };
 

@@ -106,9 +106,12 @@ public class Graph {
      * @param c2 cell 2
      */
     public void addEdge(Cell c1, Cell c2) {
+		if (c1.edges.containsKey(c2))
+			return;
+
         Edge e = new Edge(c1, c2);
-        c1.edges.add(e);
-        c2.edges.add(e);
+        c1.edges.put(c2, e);
+        c2.edges.put(c1, e);
 
         edges.add(e);
 
