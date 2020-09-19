@@ -94,6 +94,13 @@ public class JSONLoader implements ModelLoader {
 			connections[i] = jsonConnections.getInt(i);
 		}
 
+		// Find step connections
+		JSONArray jsonStepCon = json.getJSONArray("stepConnections");
+		Set<Integer> stepConnections = new HashSet<>(jsonStepCon.length());
+		for (int i = 0; i < jsonStepCon.length(); i++) {
+			stepConnections.add(jsonStepCon.getInt(i));
+		}
+
 		// Find attack steps
 		JSONArray jsonAtkSteps = json.getJSONArray("steps");
 		Map<Integer, MalAttackStep> atkSteps = new HashMap<>(jsonAtkSteps.length());
@@ -116,7 +123,7 @@ public class JSONLoader implements ModelLoader {
 			defenses.put(defense.name, defense);
 		}
 
-		return new MalAsset(name, className, hash, connections, atkSteps, defenses);
+		return new MalAsset(name, className, hash, connections, stepConnections, atkSteps, defenses);
 	}
 
 	/**

@@ -28,6 +28,10 @@ public class AssociationInformationOverlay {
 			updateAssociations();
 		});
 
+		showStepAssociations.addListener((prop, odl, newV) -> {
+			updateAssociations();
+		});
+
 		associationGroup.getChildren().addAll(assetAssociationGroup, stepAssociationGroup);
 	}
 
@@ -58,6 +62,9 @@ public class AssociationInformationOverlay {
 	 */
 	public void updateAssociations(MalModel mdl) {
 		lastModel = mdl;
+
+		assetAssociationGroup.getChildren().clear();
+		stepAssociationGroup.getChildren().clear();
 
 		if (graph == null || lastModel == null) return;
 
@@ -118,6 +125,24 @@ public class AssociationInformationOverlay {
 		}
 	}
 
+	/**
+	 * Draw step asset association lines. A line represents that one
+	 * of the steps has a parent step in the other asset.	
+	 *
+	 * @param mdl model to process.	
+	 */
 	private void drawStepAssociations(MalModel mdl) {
+		for (MalAsset asset : mdl.assets.values()) {
+			Cell start = graph.getCell(asset.hash);
+
+			for (int nodeID : asset.stepConnections) {
+				Cell end = graph.getCell(nodeID);
+
+				Edge line = new Edge(start, end);
+				line.getStyleClass().add("association-edge");
+
+				stepAssociationGroup.getChildren().add(line);
+			}
+		}
 	}
 }
