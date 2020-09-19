@@ -27,6 +27,7 @@ import mal.coverage.viewer.model.coverage.CoverageData;
 import mal.coverage.viewer.model.util.JSONLoader;
 import mal.coverage.viewer.model.util.ModelLoader;
 import mal.coverage.viewer.util.AssetDataCellConstructor;
+import mal.coverage.viewer.util.AssociationInformationOverlay;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.Graph;
 
@@ -35,6 +36,8 @@ public class Main extends Application {
 	private BorderPane root = new BorderPane();
 	private TreeView<String> simulationTree = new TreeView<>();
 	private TreeItem<String> _simTreeRoot = new TreeItem<>();
+
+	private AssociationInformationOverlay aio = new AssociationInformationOverlay();
 
 	private ModelSelectionChangedListener _mdlSelectionChangedListener = new ModelSelectionChangedListener(this);
 	private AttackStepHoverListener _stepHoverListener;
@@ -62,6 +65,8 @@ public class Main extends Application {
 		_mdlSelectionChangedListener.registerTreeView(simulationTree);
 
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+
+		aio.setGraph(graph);
 
 		primaryStage.setScene(scene);
 		primaryStage.show();
@@ -103,6 +108,7 @@ public class Main extends Application {
 		CheckMenuItem vShowParents = new CheckMenuItem("Show Parents");
 		CheckMenuItem vShowChildren = new CheckMenuItem("Show Children");
 
+		// View menu
 		vzoomreset.setOnAction(e -> graph.resetZoom());
 		vitem1.setOnAction(e -> graph.layoutCells());
 		vCoverage.setOnAction(e -> new CoverageWindow(currentCoverage));
@@ -116,7 +122,17 @@ public class Main extends Application {
 		});
 		_stepHoverListener.showChildren = vShowChildren.isSelected();
 
-		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage, vShowParents, vShowChildren);
+		// View::Association menu
+		Menu viewAssociationMenu = new Menu("Associations");
+		CheckMenuItem vaAssetAssociations = new CheckMenuItem("Asset");
+		CheckMenuItem vaStepAssociations = new CheckMenuItem("Steps");
+
+		viewAssociationMenu.getItems().addAll(vaAssetAssociations, vaStepAssociations);
+
+		vaAssetAssociations.selectedProperty().bindBidirectional(aio.showAssetAssociations);
+		vaStepAssociations.selectedProperty().bindBidirectional(aio.showStepAssociations);
+
+		viewMenu.getItems().addAll(vzoomreset, vitem1, vCoverage, vShowParents, vShowChildren, viewAssociationMenu);
 		menuBar.getMenus().addAll(fileMenu, viewMenu);
 
 		return menuBar;
@@ -219,12 +235,8 @@ public class Main extends Application {
 		root.applyCss();
 		root.layout();
 
-		// Add edges between nodes
-		for (MalAsset asset : model.assets.values()) {
-			for (int nodeId : asset.connections) {
-				graph.addEdge(asset.hash, nodeId);
-			}
-		}
+		// Add edges between nodes (asset associations)
+		aio.updateAssociations(model);
 	}
 
 	public static void main(String[] args) {

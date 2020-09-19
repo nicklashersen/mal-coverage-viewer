@@ -95,7 +95,7 @@ public class AttackStepHoverListener {
 									   end.getCenterX(),
 									   end.getCenterY());
 
-			parentLine.getStyleClass().add("parent-edge");
+			parentLine.getStyleClass().add("association-edge");
 			drawGroup.getChildren().add(parentLine); 
 		}
 

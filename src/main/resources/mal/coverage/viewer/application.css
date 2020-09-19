@@ -29,7 +29,7 @@
     -fx-stroke: green;
 }
 
-.parent-edge {
+.association-edge {
 	-fx-stroke: blue;
 	-fx-stroke-width: 1px;
 }

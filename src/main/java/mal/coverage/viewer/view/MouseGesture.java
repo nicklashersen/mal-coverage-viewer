@@ -52,6 +52,8 @@ public class MouseGesture {
             }
 
 			e.consume();
+
+			graph._onDrag();
         }
     };
 

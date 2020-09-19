@@ -1,5 +1,6 @@
 package mal.coverage.viewer.view;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,6 +24,8 @@ public class Graph {
     private Group cellLayer = new Group();
 
     protected Layout cellLayout;
+
+	public List<Runnable> dragListeners = new ArrayList<>();
 
     /**
      * Create a new graph with the default (random) layout
@@ -118,7 +121,6 @@ public class Graph {
         cellLayer.getChildren().add(e);
         e.toBack();
     }
-
     /**
      * Fetch a cell from the graph.
      * 
@@ -170,4 +172,8 @@ public class Graph {
         cellLayout.execute(cells.values());
         edges.forEach(e -> e.update());
     }
+
+	void _onDrag() {
+		dragListeners.forEach(r -> r.run());
+	}
 }
