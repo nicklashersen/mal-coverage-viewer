@@ -1,7 +1,6 @@
 package mal.coverage.viewer;
 
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -11,8 +10,8 @@ import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Line;
 import mal.coverage.viewer.model.MalAbstractStep;
-import mal.coverage.viewer.model.MalAsset;
 import mal.coverage.viewer.model.MalModel;
+import mal.coverage.viewer.model.util.RelationUtil;
 import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
 import mal.coverage.viewer.view.DataCellAttrib;
@@ -75,13 +74,11 @@ public class AttackStepHoverListener {
 		private void showChildSteps(MalAbstractStep step, Label lbl) {
 			Bounds parentBounds = getDrawBounds(lbl);
 
-			for (int con : currentModel.assets.get(step.assetHash).connections) {
-				MalAsset asset = currentModel.assets.get(con);
+			for (int id : RelationUtil.getChildrenOf(step, currentModel)) {
+				Label other = stepIdToLabel.get(id);
+				Bounds otherSceneBounds = getDrawBounds(other);
 
-				Stream.concat(asset.steps.values().stream(), asset.defense.values().stream())
-					.filter(childStep -> childStep.parents.contains(step.hash))
-					.map(childStep -> stepIdToLabel.get(childStep.hash))
-					.forEach(cLbl -> drawLine(getDrawBounds(cLbl), parentBounds));
+				drawLine(parentBounds, otherSceneBounds);
 			}
 		}
 
@@ -126,7 +123,9 @@ public class AttackStepHoverListener {
 						showChildSteps(step, lbl);
 					}
 
-				} catch (Exception e) {}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	};

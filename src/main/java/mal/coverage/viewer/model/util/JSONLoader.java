@@ -17,6 +17,7 @@ import org.json.JSONTokener;
 import javafx.scene.control.Alert;
 import mal.coverage.viewer.model.MalAsset;
 import mal.coverage.viewer.model.MalAttackStep;
+import mal.coverage.viewer.model.MalAbstractStep;
 import mal.coverage.viewer.model.MalDefense;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.model.MalSimulation;

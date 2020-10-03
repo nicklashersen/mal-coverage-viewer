@@ -54,6 +54,7 @@ public class Main extends Application {
 		Scene scene = new Scene(root, 1024, 769);
 
 		MenuBar menuBar = createMenu();
+		aio.setGraph(graph);
 
 		root.setCenter(graph.getScrollPane());
 		root.setTop(menuBar);
@@ -66,8 +67,7 @@ public class Main extends Application {
 
 		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
-		aio.setGraph(graph);
-
+		primaryStage.setTitle("Mal Coverage Viewer");
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
@@ -145,10 +145,10 @@ public class Main extends Application {
 	 */
 	private void loadFile(File file) {
 		_simTreeRoot.getChildren().clear();
-		simulations.clear();
+		simulations = new HashMap<>();
 		graph.clear();
 		mdlGrpNameMap.clear();
-		_stepHoverListener = new AttackStepHoverListener(graph);
+		aio.updateAssociations(null);
 
 		List<MalModel> models = getLoader(file).parse(file);
 

@@ -27,6 +27,7 @@ public class AssetDataCellConstructor {
 			Label lbl = cell.addAttributeToGroup("Defenses", String.format("# %s", def.name));
 
 			labelToStep.put(lbl, def);
+
 			stepIdToLabel.put(def.hash, lbl);
 		}
 	}
