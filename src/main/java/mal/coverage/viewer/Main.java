@@ -148,6 +148,7 @@ public class Main extends Application {
 		simulations.clear();
 		graph.clear();
 		mdlGrpNameMap.clear();
+		_stepHoverListener = new AttackStepHoverListener(graph);
 
 		List<MalModel> models = getLoader(file).parse(file);
 

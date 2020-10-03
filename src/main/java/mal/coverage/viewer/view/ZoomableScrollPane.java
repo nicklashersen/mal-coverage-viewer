@@ -70,22 +70,16 @@ public class ZoomableScrollPane extends ScrollPane {
 	public void scroll(double amount, Point2D mousePos) {
 			double zoomFactor = Math.exp(amount * zoomIntensity);
 
-			Bounds innerBounds = zoomGroup.getLayoutBounds();
-			Bounds viewportBounds = getViewportBounds();
-
-			double valX = getHvalue() * (innerBounds.getWidth() - viewportBounds.getWidth());
-			double valY = getVvalue() * (innerBounds.getHeight() - viewportBounds.getHeight());
-
 			scaleValue = scaleValue * zoomFactor;
 			zoomTo(scaleValue);
 			layout();
 
-			Point2D posInZoomTarget = content.parentToLocal(zoomGroup.parentToLocal(mousePos));
+			// Point2D posInZoomTarget = content.parentToLocal(zoomGroup.parentToLocal(mousePos));
 
-			Point2D adjustment = content.getLocalToParentTransform().deltaTransform(posInZoomTarget.multiply(zoomFactor - 1));
+			// Point2D adjustment = content.getLocalToParentTransform().deltaTransform(posInZoomTarget.multiply(zoomFactor - 1));
 
-			Bounds updatedInnerBounds = zoomGroup.getBoundsInLocal();
-			setHvalue((valX + adjustment.getX()) / (updatedInnerBounds.getWidth() - viewportBounds.getWidth()));
-			setHvalue((valY + adjustment.getY()) / (updatedInnerBounds.getHeight() - viewportBounds.getHeight()));
+			// Bounds updatedInnerBounds = zoomGroup.getBoundsInLocal();
+			// setHvalue((valX + adjustment.getX()) / (updatedInnerBounds.getWidth() - viewportBounds.getWidth()));
+			// setHvalue((valY + adjustment.getY()) / (updatedInnerBounds.getHeight() - viewportBounds.getHeight()));
 	}
 }

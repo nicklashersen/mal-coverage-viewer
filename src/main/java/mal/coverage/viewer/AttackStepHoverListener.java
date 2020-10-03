@@ -15,6 +15,7 @@ import mal.coverage.viewer.model.MalAsset;
 import mal.coverage.viewer.model.MalModel;
 import mal.coverage.viewer.view.Cell;
 import mal.coverage.viewer.view.DataCell;
+import mal.coverage.viewer.view.DataCellAttrib;
 import mal.coverage.viewer.view.Graph;
 
 public class AttackStepHoverListener {
@@ -86,7 +87,11 @@ public class AttackStepHoverListener {
 
 
 		private Bounds getDrawBounds(Label start) {
-			return drawGroup.sceneToLocal(start.localToScene(start.getBoundsInLocal()));
+			if (start instanceof DataCellAttrib) {
+				return drawGroup.sceneToLocal(((DataCellAttrib) start).getBoundsInScene());
+			} else {
+				return drawGroup.sceneToLocal(start.localToScene(start.getBoundsInLocal()));
+			}
 		}
 
 		private void drawLine(Bounds start, Bounds end) {

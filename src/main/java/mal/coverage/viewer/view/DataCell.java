@@ -6,6 +6,7 @@ import java.util.Map;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.VBox;
@@ -24,7 +25,8 @@ public class DataCell extends Cell {
 	private Label title = new Label();
 	private VBox _attribView = new VBox();
 
-	public Map<String, Label> attribs = new HashMap<>();
+	public Map<String, DataCellAttrib> attribs = new HashMap<>();
+	Map<String, TitledPane> attribGroup = new HashMap<>();
 
 	public DataCell(String title, String subtitle) {
 		this.title.setText(title);
@@ -54,22 +56,45 @@ public class DataCell extends Cell {
 	}
 
 	/**
-	 * Adds an attriubte with the specified text to the data node.
-	 * If an attribute with such a name already exist, the existing
-	 * label will be returned. Otherwise the new label will be returned.
+	 * Adds a new attribute group to the data cell. If a group with the 
+	 * specified name already exist, the existing group is returned.	
 	 *
-	 * @param attrib attribute name
-	 * @return label associated with the attribute name.	
-	 */
-	public Label addAttribute(String attrib) {
-		Label res = attribs.computeIfAbsent(attrib, (key) -> {
-			Label label = new Label();
-			label.setText(key);
+	 * @param title group title
+	 * @return group
+	 */	
+	public TitledPane addAttribGroup(String title) {
+		return attribGroup.computeIfAbsent(title, t -> {
+			VBox grp = new VBox();
+			TitledPane pane = new TitledPane(title, grp);
+
+			pane.setExpanded(false);
+
+			_attribView.getChildren().add(pane);
+
+			return pane;
+		});
+	}
+
+	/**
+	 * Add an attribute with the specified text to a specific group. 
+	 * If no group with the specified name exist, a new group will
+	 * be created. The attrib name must be unique (may not exist in another
+	 * group). If an attrib with the specified name already exist, the
+	 * existing label associated with the name will be returned.	
+	 *
+	 * @param group attrib group name
+	 * @param attrib name
+	 * @return label associated with the attribute name
+	 */	
+	public DataCellAttrib addAttributeToGroup(String group, String attrib) {
+		DataCellAttrib res = attribs.computeIfAbsent(attrib, (key) -> {
+			TitledPane view = addAttribGroup(group);
+			DataCellAttrib label = new DataCellAttrib(attrib, this, view);
 	
-			_attribView.getChildren().add(label);
+			((VBox) view.getContent()).getChildren().add(label);
 			return label;
 		});
-	
+
 		return res;
 	}
 	

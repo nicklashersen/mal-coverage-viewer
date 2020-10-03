@@ -24,7 +24,7 @@ public class AssetDataCellConstructor {
 
 	private void processDefenses(MalAsset asset, DataCell cell) {
 		for (MalDefense def : asset.defense.values()) {
-			Label lbl = cell.addAttribute(String.format("# %s", def.name));
+			Label lbl = cell.addAttributeToGroup("Defenses", String.format("# %s", def.name));
 
 			labelToStep.put(lbl, def);
 			stepIdToLabel.put(def.hash, lbl);
@@ -33,7 +33,7 @@ public class AssetDataCellConstructor {
 
 	private void processAttackSteps(MalAsset asset, DataCell cell) {
 		for (MalAttackStep step : asset.steps.values()) {
-			Label l = cell.addAttribute(String.format("%s %s", step.type, step.name));
+			Label l = cell.addAttributeToGroup("Attack Steps", String.format("%s %s", step.type, step.name));
 
 			labelToStep.put(l, step);
 			stepIdToLabel.put(step.hash, l);
